@@ -5,34 +5,50 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex">
   <title>Staff Panel | Ali Medical Complex</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="styles.css">
   <style>
     body { background: var(--bg-soft); }
     .admin-bar { background: var(--primary-dark); color: #fff; }
-    .admin-bar .container { display: flex; justify-content: space-between; align-items: center; height: 60px; }
-    .admin-bar a, .admin-bar button { color: #fff; }
-    .tabs { display: flex; gap: 6px; margin: 22px 0 18px; }
-    .tabs button { background: #fff; border: 1px solid var(--border); padding: 9px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; font-family: inherit; color: var(--text); }
+    .admin-bar .container { display: flex; justify-content: space-between; align-items: center; min-height: 60px; gap: 10px; flex-wrap: wrap; }
+    .admin-bar a { color: #fff; }
+    .admin-bar .btn.outline { border-color: #fff; color: #fff; }
+    .tabs { display: flex; gap: 6px; margin: 22px 0 18px; flex-wrap: wrap; }
+    .tabs button { background: #fff; border: 1px solid var(--border); padding: 9px 16px; border-radius: 8px; cursor: pointer; font-weight: 600; font-family: inherit; color: var(--text); }
     .tabs button.active { background: var(--primary); color: #fff; border-color: var(--primary); }
-    .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 18px; }
+    .tabs .count { background: var(--danger); color: #fff; border-radius: 10px; padding: 0 7px; font-size: .75rem; margin-left: 4px; }
+    .kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 18px; }
     .kpi { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
     .kpi .n { font-size: 1.8rem; font-weight: 800; color: var(--primary); }
-    .filters { display: grid; grid-template-columns: 1fr 1fr 1fr 1.4fr auto; gap: 10px; margin-bottom: 14px; }
+    .filters { display: grid; grid-template-columns: repeat(4, 1fr) 1.4fr; gap: 10px; margin-bottom: 10px; }
+    .filters label { font-size: .78rem; color: var(--muted); margin: 0 0 2px; font-weight: 500; }
     .table-wrap { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; font-size: .92rem; }
-    th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
-    th { background: var(--bg-soft); font-weight: 600; white-space: nowrap; }
+    table.data { width: 100%; border-collapse: collapse; font-size: .92rem; }
+    table.data th, table.data td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+    table.data th { background: var(--bg-soft); font-weight: 600; white-space: nowrap; }
     td select { padding: 5px 8px; font-size: .88rem; width: auto; }
     .sched-grid { display: grid; grid-template-columns: 70px 1fr 1fr; gap: 6px 10px; align-items: center; }
     .sched-grid input[type=time] { padding: 6px 8px; }
-    @media (max-width: 800px) { .kpis { grid-template-columns: 1fr 1fr; } .filters { grid-template-columns: 1fr 1fr; } }
-    @media print { .admin-bar, .tabs, .filters, .kpis, .no-print { display: none !important; } }
+    .bars { display: flex; align-items: flex-end; gap: 4px; height: 160px; padding-top: 10px; }
+    .bars .b { flex: 1; background: var(--primary); border-radius: 4px 4px 0 0; min-height: 2px; position: relative; }
+    .bars .b.future { background: #9fcfd1; }
+    .bars .b.today { background: var(--accent); }
+    .bars .b span { position: absolute; top: -18px; left: 0; right: 0; text-align: center; font-size: .72rem; color: var(--muted); }
+    .bar-labels { display: flex; gap: 4px; font-size: .65rem; color: var(--muted); }
+    .bar-labels span { flex: 1; text-align: center; overflow: hidden; }
+    .hbar { display: grid; grid-template-columns: 170px 1fr 34px; gap: 10px; align-items: center; margin: 8px 0; font-size: .9rem; }
+    .hbar .track { background: var(--bg-soft); border-radius: 6px; height: 14px; overflow: hidden; }
+    .hbar .fill { background: var(--primary); height: 100%; }
+    .enq.new { border-left: 4px solid var(--accent); }
+    .actions-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+    @media (max-width: 800px) { .kpis { grid-template-columns: 1fr 1fr; } .filters { grid-template-columns: 1fr 1fr; } .hbar { grid-template-columns: 110px 1fr 30px; } }
+    @media print { .admin-bar, .tabs, .filters, .no-print, #tab-dash { display: none !important; } }
   </style>
 </head>
 <body>
 <div class="admin-bar"><div class="container">
   <b>Ali Medical Complex · Staff Panel</b>
-  <span><a href="index.html" target="_blank">View site</a> <button id="chpw" class="btn small outline hidden" style="margin-left:12px;border-color:#fff;color:#fff">Change password</button> <button id="logout" class="btn small outline hidden" style="margin-left:12px;border-color:#fff;color:#fff">Log out</button></span>
+  <span><a href="index.html" target="_blank">View site ↗</a> <button id="logout" class="btn small outline hidden" style="margin-left:12px">Log out</button></span>
 </div></div>
 
 <div class="container">
@@ -44,42 +60,70 @@
   </form>
 
   <div id="app" class="hidden">
-    <div class="tabs">
-      <button class="active" data-tab="appts">Appointments</button>
-      <button data-tab="doctors">Doctors</button>
+    <div class="tabs" role="tablist">
+      <button class="active" data-tab="dash">Dashboard</button>
+      <button data-tab="appts">Appointments</button>
+      <button data-tab="doctors">Doctors &amp; Leave</button>
+      <button data-tab="enq">Enquiries <span class="count hidden" id="c-enq"></span></button>
+      <button data-tab="reviews">Reviews <span class="count hidden" id="c-rev"></span></button>
+      <button data-tab="settings">Settings</button>
     </div>
     <div id="msg"></div>
 
-    <div id="tab-appts">
+    <!-- Dashboard -->
+    <div id="tab-dash">
       <div class="kpis">
         <div class="kpi"><div class="muted">Today’s appointments</div><div class="n" id="k-today">–</div></div>
         <div class="kpi"><div class="muted">Pending confirmation</div><div class="n" id="k-pending">–</div></div>
         <div class="kpi"><div class="muted">Upcoming</div><div class="n" id="k-upcoming">–</div></div>
+        <div class="kpi"><div class="muted">New enquiries</div><div class="n" id="k-enq">–</div></div>
+        <div class="kpi"><div class="muted">Reviews to approve</div><div class="n" id="k-rev">–</div></div>
         <div class="kpi"><div class="muted">All-time bookings</div><div class="n" id="k-total">–</div></div>
       </div>
-      <div class="filters">
-        <input type="date" id="f-date">
-        <select id="f-doctor"><option value="">All doctors</option></select>
-        <select id="f-status"><option value="">All statuses</option><option>pending</option><option>confirmed</option><option>completed</option><option>cancelled</option><option>no-show</option></select>
-        <input id="f-q" placeholder="Search name, phone or ref">
-        <button class="btn outline small" onclick="window.print()">Print</button>
+      <div class="grid cols-2">
+        <div class="card"><h3>Appointments per day</h3><p class="muted small" style="margin-top:-8px">Last 14 days and next 7 (today highlighted)</p>
+          <div class="bars" id="bars"></div><div class="bar-labels" id="bar-labels"></div></div>
+        <div class="card"><h3>This month by doctor</h3><div id="by-doc"></div>
+          <h3 style="margin-top:20px">This month by status</h3><div id="by-status"></div></div>
       </div>
+    </div>
+
+    <!-- Appointments -->
+    <div id="tab-appts" class="hidden">
+      <div class="filters">
+        <div><label for="f-from">From</label><input type="date" id="f-from"></div>
+        <div><label for="f-to">To</label><input type="date" id="f-to"></div>
+        <div><label for="f-doctor">Doctor</label><select id="f-doctor"><option value="">All doctors</option></select></div>
+        <div><label for="f-status">Status</label><select id="f-status"><option value="">All statuses</option><option>pending</option><option>confirmed</option><option>completed</option><option>cancelled</option><option>no-show</option></select></div>
+        <div><label for="f-q">Search</label><input id="f-q" placeholder="Name, phone or ref"></div>
+      </div>
+      <div class="actions-row no-print" style="margin-bottom:12px">
+        <button class="btn small outline" data-range="today">Today</button>
+        <button class="btn small outline" data-range="tomorrow">Tomorrow</button>
+        <button class="btn small outline" data-range="week">Next 7 days</button>
+        <button class="btn small outline" data-range="all">All</button>
+        <span style="flex:1"></span>
+        <button class="btn small outline" id="csv">⬇ Export CSV</button>
+        <button class="btn small outline" onclick="window.print()">🖨 Print</button>
+      </div>
+      <p class="muted small" id="appt-count"></p>
       <div class="table-wrap">
-        <table>
+        <table class="data">
           <thead><tr><th>Date</th><th>Time</th><th>Ref</th><th>Patient</th><th>Phone</th><th>Doctor</th><th>Reason</th><th>Status</th></tr></thead>
           <tbody id="rows"></tbody>
         </table>
       </div>
     </div>
 
+    <!-- Doctors & leave -->
     <div id="tab-doctors" class="hidden">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
         <h3 style="margin:0">Doctors</h3>
         <button class="btn small" onclick="editDoctor()">+ Add Doctor</button>
       </div>
       <div class="table-wrap">
-        <table>
-          <thead><tr><th>Name</th><th>Specialty</th><th>Fee</th><th>Timings</th><th>Shown on site</th><th></th></tr></thead>
+        <table class="data">
+          <thead><tr><th>Name</th><th>Specialty</th><th>Fee</th><th>Timings</th><th>Shown</th><th></th></tr></thead>
           <tbody id="doc-rows"></tbody>
         </table>
       </div>
@@ -88,7 +132,7 @@
         <h3 id="doc-form-title">Edit Doctor</h3>
         <div class="row">
           <div class="field"><label>Name *</label><input name="name" required></div>
-          <div class="field"><label>Specialty *</label><input name="specialty" required></div>
+          <div class="field"><label>Specialty *</label><input name="specialty" required list="spec-list"><datalist id="spec-list"><option>Endocrinologist</option><option>Pediatrician</option><option>Psychologist</option><option>Internal Medicine Specialist</option><option>General Physician</option><option>Gynecologist</option></datalist></div>
         </div>
         <div class="row3">
           <div class="field"><label>Title</label><input name="title" placeholder="e.g. Assistant Professor"></div>
@@ -98,49 +142,92 @@
         <div class="field"><label>Qualifications</label><input name="qualifications"></div>
         <div class="field"><label>Short bio</label><textarea name="bio" rows="2"></textarea></div>
         <div class="row3">
-          <div class="field"><label>Slot length</label><select name="slot_minutes"><option>10</option><option>15</option><option>20</option><option>30</option><option>45</option><option>60</option></select></div>
+          <div class="field"><label>Slot length (minutes)</label><select name="slot_minutes"><option>10</option><option>15</option><option>20</option><option>30</option><option>45</option><option>60</option></select></div>
           <div class="field"><label>Display order</label><input name="sort_order" type="number"></div>
           <div class="field"><label>Shown on site</label><select name="active"><option value="1">Yes</option><option value="0">No (hidden)</option></select></div>
         </div>
-        <label>Weekly timings <span class="muted" style="font-weight:400">(leave a day empty if the doctor is off; leave all empty for phone-only booking)</span></label>
+        <label>Weekly timings <span class="muted" style="font-weight:400">(leave a day empty if off; all empty = phone booking only)</span></label>
         <div class="sched-grid" id="sched"></div>
         <div style="display:flex;gap:10px;margin-top:18px">
           <button class="btn" type="submit">Save</button>
           <button class="btn outline" type="button" onclick="$('doc-form').classList.add('hidden')">Close</button>
         </div>
       </form>
+
+      <div class="card" style="margin-top:24px">
+        <h3>Doctor leave / holidays</h3>
+        <p class="muted small" style="margin-top:-6px">Online booking is blocked on these dates. Existing bookings are not cancelled automatically: call those patients.</p>
+        <form id="leave-form" class="filters" style="grid-template-columns:1.3fr 1fr 1fr 1.5fr auto;align-items:end">
+          <div><label>Doctor</label><select id="l-doc" required></select></div>
+          <div><label>From</label><input type="date" id="l-from" required></div>
+          <div><label>To</label><input type="date" id="l-to" required></div>
+          <div><label>Note (optional)</label><input id="l-note" placeholder="e.g. Eid holidays"></div>
+          <button class="btn small" type="submit">Add leave</button>
+        </form>
+        <div id="leaves"></div>
+      </div>
+    </div>
+
+    <!-- Enquiries -->
+    <div id="tab-enq" class="hidden"><div id="enq-list"></div></div>
+
+    <!-- Reviews -->
+    <div id="tab-reviews" class="hidden"><div id="rev-list"></div></div>
+
+    <!-- Settings -->
+    <div id="tab-settings" class="hidden">
+      <div class="grid cols-2" style="align-items:start">
+        <form id="site-form" class="card">
+          <h3>Website settings</h3>
+          <div class="field"><label>Announcement banner <span class="muted" style="font-weight:400">(shown on top of every page; leave empty to hide)</span></label>
+            <input name="announcement" maxlength="300" placeholder="e.g. Hospital closed on Friday for Eid. Online booking open."></div>
+          <div class="row">
+            <div class="field"><label>Main phone</label><input name="phone1"></div>
+            <div class="field"><label>Second phone</label><input name="phone2"></div>
+          </div>
+          <div class="row">
+            <div class="field"><label>WhatsApp number <span class="muted" style="font-weight:400">(format 923001234567)</span></label><input name="whatsapp" pattern="92\d{10}"></div>
+            <div class="field"><label>Email</label><input name="email" type="email"></div>
+          </div>
+          <div class="field"><label>Facebook page link</label><input name="facebook" type="url" placeholder="https://facebook.com/…"></div>
+          <div class="field"><label>OPD days text</label><input name="opd_note"></div>
+          <button class="btn" type="submit">Save settings</button>
+        </form>
+        <form id="pw-form" class="card">
+          <h3>Change staff password</h3>
+          <div class="field"><label>Current password</label><input type="password" id="pw-old" autocomplete="current-password" required></div>
+          <div class="field"><label>New password (8+ characters)</label><input type="password" id="pw-new" minlength="8" autocomplete="new-password" required></div>
+          <div class="field"><label>Repeat new password</label><input type="password" id="pw-new2" minlength="8" autocomplete="new-password" required></div>
+          <button class="btn" type="submit">Change password</button>
+          <p class="muted small">All staff will be logged out after the change.</p>
+        </form>
+      </div>
     </div>
   </div>
 </div>
 
 <script src="common.js"></script>
 <script>
-// common.js renders chrome only if the placeholders exist
-document.removeEventListener('DOMContentLoaded', renderChrome);
 const $ = id => document.getElementById(id);
 let token = null;
 try { token = sessionStorage.getItem('amc_token'); } catch {}
-let doctors = [], editingId = null;
+let doctors = [], editingId = null, lastRows = [], today = todayPK();
 
-const aapi = (fn, args = {}) => rpc(fn, { p_token: token, ...args }).catch(e => {
-  if (e.status === 401) logout();
-  throw e;
-});
-const flash = (t, type = 'success') => { $('msg').innerHTML = `<div class="alert ${type}">${esc(t)}</div>`; setTimeout(() => $('msg').innerHTML = '', 3500); };
+const aapi = (fn, args = {}) => rpc(fn, { p_token: token, ...args }).catch(e => { if (e.status === 401) logout(); throw e; });
+const flash = (t, type = 'success') => { $('msg').innerHTML = `<div class="alert ${type}">${esc(t)}</div>`; clearTimeout(flash.t); flash.t = setTimeout(() => $('msg').innerHTML = '', 4000); };
+const addDays = (d, n) => { const x = new Date(d + 'T00:00:00'); x.setDate(x.getDate() + n); return x.toLocaleDateString('en-CA'); };
 
 function logout() {
   if (token) rpc('amc_admin_logout', { p_token: token }).catch(() => {});
   token = null; try { sessionStorage.removeItem('amc_token'); } catch {}
-  $('app').classList.add('hidden'); $('logout').classList.add('hidden'); $('chpw').classList.add('hidden'); $('login').classList.remove('hidden');
+  $('app').classList.add('hidden'); $('logout').classList.add('hidden'); $('login').classList.remove('hidden');
 }
 async function start() {
-  $('login').classList.add('hidden'); $('app').classList.remove('hidden'); $('logout').classList.remove('hidden'); $('chpw').classList.remove('hidden');
+  $('login').classList.add('hidden'); $('app').classList.remove('hidden'); $('logout').classList.remove('hidden');
+  $('f-from').value = $('f-to').value = today;
   await loadDoctors();
-  const s = await aapi('amc_admin_stats');
-  $('f-date').value = s.todayDate;
-  loadAppts();
+  await loadDash();
 }
-
 $('login').addEventListener('submit', async e => {
   e.preventDefault();
   try {
@@ -152,39 +239,46 @@ $('login').addEventListener('submit', async e => {
   } catch (err) { $('login-msg').innerHTML = `<div class="alert error">${esc(err.message)}</div>`; }
 });
 $('logout').onclick = logout;
-$('chpw').onclick = async () => {
-  const oldPw = prompt('Current password:'); if (!oldPw) return;
-  const newPw = prompt('New password (at least 8 characters):'); if (!newPw) return;
-  if (newPw !== prompt('Type the new password again:')) return flash('Passwords did not match.', 'error');
-  try { await aapi('amc_admin_change_password', { p_old: oldPw, p_new: newPw }); alert('Password changed. Please log in again.'); token = null; logout(); }
-  catch (e) { flash(e.message, 'error'); }
-};
 
+const loaders = { dash: loadDash, appts: loadAppts, doctors: () => Promise.all([loadDoctors(), loadLeaves()]), enq: loadEnq, reviews: loadReviews, settings: loadSettings };
 document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => {
   document.querySelectorAll('.tabs button').forEach(x => x.classList.toggle('active', x === b));
-  $('tab-appts').classList.toggle('hidden', b.dataset.tab !== 'appts');
-  $('tab-doctors').classList.toggle('hidden', b.dataset.tab !== 'doctors');
+  Object.keys(loaders).forEach(k => $('tab-' + k).classList.toggle('hidden', k !== b.dataset.tab));
+  Promise.resolve(loaders[b.dataset.tab]()).catch(e => flash(e.message, 'error'));
 });
 
-// ----- appointments -----
-async function loadStats() {
+// ----- dashboard -----
+async function loadDash() {
   const s = await aapi('amc_admin_stats');
-  $('k-today').textContent = s.today; $('k-pending').textContent = s.pending;
-  $('k-upcoming').textContent = s.upcoming; $('k-total').textContent = s.total;
+  today = s.todayDate;
+  [['k-today', s.today], ['k-pending', s.pending], ['k-upcoming', s.upcoming], ['k-enq', s.new_enquiries], ['k-rev', s.pending_reviews], ['k-total', s.total]]
+    .forEach(([id, v]) => $(id).textContent = v);
+  [['c-enq', s.new_enquiries], ['c-rev', s.pending_reviews]].forEach(([id, v]) => { $(id).textContent = v; $(id).classList.toggle('hidden', !v); });
+  const max = Math.max(1, ...s.daily.map(d => d.count));
+  $('bars').innerHTML = s.daily.map(d => `<div class="b ${d.date === today ? 'today' : d.date > today ? 'future' : ''}" style="height:${d.count / max * 100}%" title="${fmtDate(d.date)}: ${d.count}"><span>${d.count || ''}</span></div>`).join('');
+  $('bar-labels').innerHTML = s.daily.map(d => `<span>${d.date.slice(8)}</span>`).join('');
+  const dmax = Math.max(1, ...s.by_doctor.map(d => d.count));
+  $('by-doc').innerHTML = s.by_doctor.map(d => `<div class="hbar"><span>${esc(d.doctor)}</span><div class="track"><div class="fill" style="width:${d.count / dmax * 100}%"></div></div><b>${d.count}</b></div>`).join('');
+  const st = s.by_status, smax = Math.max(1, ...Object.values(st));
+  $('by-status').innerHTML = Object.keys(st).length ? Object.entries(st).map(([k, v]) => `<div class="hbar"><span><span class="badge ${k}">${k}</span></span><div class="track"><div class="fill" style="width:${v / smax * 100}%"></div></div><b>${v}</b></div>`).join('') : '<p class="muted">No appointments this month yet.</p>';
 }
+
+// ----- appointments -----
 async function loadAppts() {
-  loadStats();
   const rows = await aapi('amc_admin_appointments', {
-    p_date: $('f-date').value || null, p_doctor_id: $('f-doctor').value ? Number($('f-doctor').value) : null,
+    p_from: $('f-from').value || null, p_to: $('f-to').value || null,
+    p_doctor_id: $('f-doctor').value ? Number($('f-doctor').value) : null,
     p_status: $('f-status').value || null, p_q: $('f-q').value.trim() || null });
+  lastRows = rows.sort((a, b) => a.date === b.date ? a.time.localeCompare(b.time) : a.date.localeCompare(b.date));
+  $('appt-count').textContent = `${rows.length} appointment${rows.length === 1 ? '' : 's'}`;
   $('rows').innerHTML = rows.length ? rows.map(a => `<tr>
     <td>${fmtDate(a.date)}</td><td>${fmtTime(a.time)}</td><td><b>${esc(a.ref)}</b></td>
-    <td>${esc(a.patient_name)}<div class="muted" style="font-size:.8rem">${[a.age ? a.age + ' yrs' : '', a.gender || ''].filter(Boolean).join(', ')}</div></td>
-    <td><a href="tel:${esc(a.phone)}">${esc(a.phone)}</a></td>
-    <td>${esc(a.doctor)}<div class="muted" style="font-size:.8rem">${esc(a.specialty)}</div></td>
+    <td>${esc(a.patient_name)}<div class="muted small">${[a.age != null ? a.age + ' yrs' : '', a.gender || ''].filter(Boolean).join(', ')}</div></td>
+    <td><a href="${tel(a.phone)}">${esc(a.phone)}</a><div class="no-print"><a class="small" target="_blank" rel="noopener" href="https://wa.me/${a.phone.replace(/^0/, '92').replace(/\D/g, '')}?text=${encodeURIComponent(`Assalam o Alaikum ${a.patient_name}, this is Ali Medical Complex about your appointment ${a.ref} with ${a.doctor} on ${fmtDate(a.date)} at ${fmtTime(a.time)}.`)}">WhatsApp</a></div></td>
+    <td>${esc(a.doctor)}<div class="muted small">${esc(a.specialty)}</div></td>
     <td style="max-width:220px">${esc(a.reason)}</td>
     <td><span class="badge ${a.status}">${a.status}</span><br>
-      <select class="no-print" data-id="${a.id}" style="margin-top:4px">
+      <select class="no-print" data-id="${a.id}" style="margin-top:4px" aria-label="Change status">
         ${['pending', 'confirmed', 'completed', 'cancelled', 'no-show'].map(s => `<option ${s === a.status ? 'selected' : ''}>${s}</option>`).join('')}
       </select></td></tr>`).join('')
     : '<tr><td colspan="8" class="muted center" style="padding:30px">No appointments found for these filters.</td></tr>';
@@ -195,13 +289,29 @@ $('rows').addEventListener('change', async e => {
   catch (err) { flash(err.message, 'error'); }
   loadAppts();
 });
-['f-date', 'f-doctor', 'f-status'].forEach(id => $(id).addEventListener('change', loadAppts));
+['f-from', 'f-to', 'f-doctor', 'f-status'].forEach(id => $(id).addEventListener('change', loadAppts));
 let qTimer; $('f-q').addEventListener('input', () => { clearTimeout(qTimer); qTimer = setTimeout(loadAppts, 300); });
+document.querySelectorAll('[data-range]').forEach(b => b.onclick = () => {
+  const r = b.dataset.range;
+  $('f-from').value = r === 'all' ? '' : r === 'tomorrow' ? addDays(today, 1) : today;
+  $('f-to').value = r === 'all' ? '' : r === 'week' ? addDays(today, 7) : r === 'tomorrow' ? addDays(today, 1) : today;
+  loadAppts();
+});
+$('csv').onclick = () => {
+  const cols = ['ref', 'date', 'time', 'patient_name', 'phone', 'age', 'gender', 'doctor', 'specialty', 'fee', 'status', 'reason', 'created_at'];
+  const q = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
+  const csv = '﻿' + [cols.join(','), ...lastRows.map(r => cols.map(c => q(r[c])).join(','))].join('\r\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+  a.download = `appointments-${$('f-from').value || 'all'}-${$('f-to').value || 'all'}.csv`; a.click();
+};
 
 // ----- doctors -----
 async function loadDoctors() {
   doctors = await aapi('amc_admin_doctors');
-  $('f-doctor').innerHTML = '<option value="">All doctors</option>' + doctors.map(d => `<option value="${d.id}">${esc(d.name)}</option>`).join('');
+  const opts = doctors.map(d => `<option value="${d.id}">${esc(d.name)}</option>`).join('');
+  $('f-doctor').innerHTML = '<option value="">All doctors</option>' + opts;
+  $('l-doc').innerHTML = opts;
   $('doc-rows').innerHTML = doctors.map(d => `<tr>
     <td><b>${esc(d.name)}</b></td><td>${esc(d.specialty)}</td><td>${d.fee ? 'Rs. ' + d.fee.toLocaleString() : '–'}</td>
     <td style="max-width:280px">${esc(scheduleText(d.schedule))}</td><td>${d.active ? 'Yes' : 'No'}</td>
@@ -215,8 +325,8 @@ function editDoctor(id) {
   ['name', 'specialty', 'title', 'experience', 'fee', 'qualifications', 'bio', 'slot_minutes', 'sort_order'].forEach(k => f.elements[k].value = d[k] ?? '');
   f.elements.active.value = d.active ? '1' : '0';
   $('sched').innerHTML = DAY_ORDER.map(day => `<b>${DAY_NAMES[day]}</b>
-    <input type="time" data-day="${day}" data-i="0" value="${d.schedule[day]?.[0] || ''}">
-    <input type="time" data-day="${day}" data-i="1" value="${d.schedule[day]?.[1] || ''}">`).join('');
+    <input type="time" data-day="${day}" data-i="0" value="${d.schedule[day]?.[0] || ''}" aria-label="${DAY_FULL[day]} start">
+    <input type="time" data-day="${day}" data-i="1" value="${d.schedule[day]?.[1] || ''}" aria-label="${DAY_FULL[day]} end">`).join('');
   f.classList.remove('hidden');
   f.scrollIntoView({ behavior: 'smooth' });
 }
@@ -230,9 +340,95 @@ $('doc-form').addEventListener('submit', async e => {
     const a = f.querySelector(`[data-day=${day}][data-i="0"]`).value, b = f.querySelector(`[data-day=${day}][data-i="1"]`).value;
     if (a && b) body.schedule[day] = [a, b];
   });
+  try { await aapi('amc_admin_save_doctor', { p_id: editingId, p: body }); flash('Doctor saved.'); f.classList.add('hidden'); loadDoctors(); }
+  catch (err) { flash(err.message, 'error'); }
+});
+
+async function loadLeaves() {
+  const ls = await aapi('amc_admin_leaves');
+  $('leaves').innerHTML = ls.length ? `<div class="table-wrap"><table class="data"><thead><tr><th>Date</th><th>Doctor</th><th>Note</th><th>Bookings that day</th><th></th></tr></thead><tbody>
+    ${ls.map(l => `<tr><td>${fmtDate(l.date)}</td><td>${esc(l.doctor)}</td><td>${esc(l.note)}</td>
+      <td>${l.booked ? `<span class="pill red">${l.booked} to call</span>` : '–'}</td>
+      <td><button class="btn small outline" data-leave="${l.id}">Remove</button></td></tr>`).join('')}</tbody></table></div>`
+    : '<p class="muted">No upcoming leave.</p>';
+}
+$('leaves').addEventListener('click', async e => {
+  const b = e.target.closest('[data-leave]'); if (!b) return;
+  try { await aapi('amc_admin_delete_leave', { p_id: Number(b.dataset.leave) }); flash('Leave removed.'); loadLeaves(); } catch (err) { flash(err.message, 'error'); }
+});
+$('leave-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  if (!$('l-to').value) $('l-to').value = $('l-from').value;
   try {
-    await aapi('amc_admin_save_doctor', { p_id: editingId, p: body });
-    flash('Doctor saved.'); f.classList.add('hidden'); loadDoctors();
+    const n = await aapi('amc_admin_add_leave', { p_doctor_id: Number($('l-doc').value), p_from: $('l-from').value, p_to: $('l-to').value, p_note: $('l-note').value });
+    flash(`Leave added for ${n} day(s).`); e.target.reset(); loadLeaves();
+  } catch (err) { flash(err.message, 'error'); }
+});
+$('l-from').addEventListener('change', () => { if (!$('l-to').value || $('l-to').value < $('l-from').value) $('l-to').value = $('l-from').value; });
+
+// ----- enquiries -----
+async function loadEnq() {
+  const list = await aapi('amc_admin_enquiries');
+  $('enq-list').innerHTML = list.length ? list.map(q => `<div class="card enq ${q.status}" style="margin-bottom:12px">
+    <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap">
+      <b>${esc(q.subject || 'Enquiry')} – ${esc(q.name)}</b>
+      <span class="muted small">${new Date(q.created_at).toLocaleString('en-GB', { timeZone: 'Asia/Karachi' })} · <span class="badge ${q.status === 'new' ? 'pending' : q.status === 'replied' ? 'completed' : 'confirmed'}">${q.status}</span></span>
+    </div>
+    <p style="white-space:pre-wrap;margin:10px 0">${esc(q.message)}</p>
+    <div class="muted small">📞 <a href="${tel(q.phone)}">${esc(q.phone)}</a>${q.email ? ` · ✉️ <a href="mailto:${esc(q.email)}">${esc(q.email)}</a>` : ''}</div>
+    <div class="actions-row">
+      <a class="btn small outline" target="_blank" rel="noopener" href="https://wa.me/${q.phone.replace(/^0/, '92').replace(/\D/g, '')}">Reply on WhatsApp</a>
+      ${q.status !== 'read' ? `<button class="btn small outline" data-enq="${q.id}" data-s="read">Mark read</button>` : ''}
+      ${q.status !== 'replied' ? `<button class="btn small outline" data-enq="${q.id}" data-s="replied">Mark replied</button>` : ''}
+      <button class="btn small outline" data-enq="${q.id}" data-s="delete">Delete</button>
+    </div></div>`).join('') : '<p class="muted">No messages yet.</p>';
+}
+$('enq-list').addEventListener('click', async e => {
+  const b = e.target.closest('[data-enq]'); if (!b) return;
+  if (b.dataset.s === 'delete' && !confirm('Delete this message?')) return;
+  try { await aapi('amc_admin_set_enquiry', { p_id: Number(b.dataset.enq), p_status: b.dataset.s }); loadEnq(); loadDash(); } catch (err) { flash(err.message, 'error'); }
+});
+
+// ----- reviews -----
+async function loadReviews() {
+  const list = await aapi('amc_admin_reviews');
+  $('rev-list').innerHTML = list.length ? list.map(r => `<div class="card" style="margin-bottom:12px">
+    <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap">
+      <span>${stars(r.rating)} <b>${esc(r.patient_name)}</b> → ${esc(r.doctor)}</span>
+      <span class="muted small">${fmtDate(r.created_at)} · ${esc(r.ref)} · <span class="badge ${r.approved ? 'completed' : 'pending'}">${r.approved ? 'shown on site' : 'awaiting approval'}</span></span>
+    </div>
+    ${r.comment ? `<p style="margin:10px 0">${esc(r.comment)}</p>` : '<p class="muted small">No comment.</p>'}
+    <div class="actions-row">
+      ${r.approved ? `<button class="btn small outline" data-rev="${r.id}" data-a="hide">Hide from site</button>` : `<button class="btn small" data-rev="${r.id}" data-a="approve">Approve</button>`}
+      <button class="btn small outline" data-rev="${r.id}" data-a="delete">Delete</button>
+    </div></div>`).join('') : '<p class="muted">No reviews yet. Patients can review after their appointment is marked “completed”.</p>';
+}
+$('rev-list').addEventListener('click', async e => {
+  const b = e.target.closest('[data-rev]'); if (!b) return;
+  if (b.dataset.a === 'delete' && !confirm('Delete this review?')) return;
+  try { await aapi('amc_admin_set_review', { p_id: Number(b.dataset.rev), p_action: b.dataset.a }); loadReviews(); loadDash(); } catch (err) { flash(err.message, 'error'); }
+});
+
+// ----- settings -----
+async function loadSettings() {
+  const s = await rpc('amc_site');
+  const f = $('site-form');
+  ['announcement', 'phone1', 'phone2', 'whatsapp', 'email', 'facebook', 'opd_note'].forEach(k => f.elements[k].value = s[k] || '');
+}
+$('site-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const f = e.target, body = {};
+  ['announcement', 'phone1', 'phone2', 'whatsapp', 'email', 'facebook', 'opd_note'].forEach(k => body[k] = f.elements[k].value.trim());
+  try { await aapi('amc_admin_save_site', { p: body }); try { sessionStorage.removeItem('amc_site'); } catch {} flash('Settings saved. The website shows them right away.'); }
+  catch (err) { flash(err.message, 'error'); }
+});
+$('pw-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  if ($('pw-new').value !== $('pw-new2').value) return flash('New passwords do not match.', 'error');
+  try {
+    await aapi('amc_admin_change_password', { p_old: $('pw-old').value, p_new: $('pw-new').value });
+    alert('Password changed. Please log in with your new password.');
+    token = null; logout();
   } catch (err) { flash(err.message, 'error'); }
 });
 

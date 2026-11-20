@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Services & Specialties | Ali Medical Complex, Multan</title>
+  <meta name="description" content="Endocrinology, pediatrics, internal medicine and psychology services at Ali Medical Complex, Multan.">
+  <meta property="og:title" content="Services & Specialties | Ali Medical Complex, Multan">
+  <meta property="og:description" content="Endocrinology, pediatrics, internal medicine and psychology services at Ali Medical Complex, Multan.">
+  <meta name="theme-color" content="#0b6e74">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="site-header"></div>
+<main id="main">
+<div class="page-head"><div class="container"><h1>Services &amp; Specialties</h1><p class="muted" style="margin:4px 0 0">What we treat, and which doctor to see.</p></div></div>
+
+<section>
+  <div class="container" id="blocks"><p class="muted">Loading…</p></div>
+</section>
+<section class="soft">
+  <div class="container">
+    <div class="section-head"><h2>Not sure which doctor to see?</h2><p class="muted">Send us a WhatsApp message or call, and our staff will guide you to the right specialist.</p></div>
+    <p class="center"><a class="btn" data-site="whatsapp" href="#" target="_blank" rel="noopener">Ask on WhatsApp</a> <a class="btn outline" data-site="phone1" href="#"></a></p>
+  </div>
+</section>
+</main>
+<div id="site-footer"></div>
+<script src="common.js"></script>
+<script>
+function render(docs) {
+  document.getElementById('blocks').innerHTML = SPECIALTIES.map(s => {
+    const ds = docs.filter(d => d.specialty.toLowerCase().includes(s.key.toLowerCase()));
+    return `<div class="service-block" id="${s.key}">
+      <div class="ico">${s.icon}</div>
+      <div><h2>${s.name}</h2><p class="muted">${s.short}</p>
+        <h3 style="font-size:1rem;margin-top:14px">Common conditions treated</h3>
+        <ul class="cond">${s.conditions.map(c => `<li>${c}</li>`).join('')}</ul>
+        <p><b>Doctors:</b> ${ds.length ? ds.map(d => `<a href="doctor.html?id=${d.id}">${esc(d.name)}</a>`).join(', ') : '<span class="muted">Please call to ask about availability.</span>'}</p>
+        ${ds.some(isBookable) ? `<a class="btn small" href="doctors.html?specialty=${encodeURIComponent(ds[0].specialty)}">Book with a ${s.name.toLowerCase()} specialist</a>` : ''}
+      </div></div>`;
+  }).join('');
+  if (location.hash) document.getElementById(location.hash.slice(1))?.scrollIntoView();
+}
+rpc('amc_doctors').then(render).catch(() => render([]));
+</script>
+</body>
+</html>

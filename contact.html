@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Contact Us | Ali Medical Complex, Multan</title>
+  <meta name="description" content="Phone, WhatsApp, address and directions for Ali Medical Complex, Chungi No. 1, Suraj Miani Road, Multan.">
+  <meta property="og:title" content="Contact Us | Ali Medical Complex, Multan">
+  <meta property="og:description" content="Phone, WhatsApp, address and directions for Ali Medical Complex, Chungi No. 1, Suraj Miani Road, Multan.">
+  <meta name="theme-color" content="#0b6e74">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="site-header"></div>
+<main id="main">
+<div class="page-head"><div class="container"><h1>Contact Us</h1><p class="muted" style="margin:4px 0 0">Call, WhatsApp, visit, or send us a message.</p></div></div>
+
+<section>
+  <div class="container">
+    <div class="grid cols-3">
+      <div class="card"><h3>📞 Call</h3><p><a data-site="phone1" href="#"></a><br><a data-site="phone2" href="#"></a></p><p class="muted small" style="margin:0">For appointments and enquiries.</p></div>
+      <div class="card"><h3>💬 WhatsApp</h3><p class="muted">Quick questions, directions and help with bookings.</p><a class="btn small" data-site="whatsapp" href="#" target="_blank" rel="noopener">Chat on WhatsApp</a></div>
+      <div class="card"><h3>📍 Visit</h3><p class="muted">Chungi No. 1, Suraj Miani Road, Multan, Punjab</p><p class="muted small"><span data-site="opd_note"></span></p><a class="btn outline small" data-site="maps" href="#" target="_blank" rel="noopener">Get Directions</a></div>
+    </div>
+  </div>
+</section>
+<section class="soft">
+  <div class="container about-grid" style="align-items:start">
+    <form id="enq" class="card" novalidate>
+      <h2>Send us a message</h2>
+      <div id="msg"></div>
+      <div class="row">
+        <div class="field"><label for="n">Your name *</label><input id="n" maxlength="80" autocomplete="name" required></div>
+        <div class="field"><label for="p">Mobile number *</label><input id="p" inputmode="tel" placeholder="03001234567" autocomplete="tel" required></div>
+      </div>
+      <div class="row">
+        <div class="field"><label for="e">Email (optional)</label><input id="e" type="email" maxlength="120" autocomplete="email"></div>
+        <div class="field"><label for="s">Subject</label>
+          <select id="s"><option>General enquiry</option><option>Appointment help</option><option>Doctor availability</option><option>Feedback / suggestion</option><option>Complaint</option></select></div>
+      </div>
+      <div class="field"><label for="m">Message *</label><textarea id="m" rows="5" maxlength="2000" required></textarea></div>
+      <p class="muted small">For medical emergencies, please go to the nearest emergency department or call 1122.</p>
+      <button class="btn" type="submit" id="send">Send Message</button>
+    </form>
+    <div>
+      <iframe class="map" id="map" title="Map showing Ali Medical Complex" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+      <p class="muted small">Map location is approximate. Use “Get Directions” for turn-by-turn navigation.</p>
+    </div>
+  </div>
+</section>
+</main>
+<div id="site-footer"></div>
+<script src="common.js"></script>
+<script>
+document.getElementById('map').src = HOSPITAL.mapEmbed;
+const $ = id => document.getElementById(id);
+$('enq').addEventListener('submit', async e => {
+  e.preventDefault();
+  $('send').disabled = true; $('send').textContent = 'Sending…';
+  try {
+    await rpc('amc_submit_enquiry', { p_name: $('n').value, p_phone: $('p').value, p_email: $('e').value, p_subject: $('s').value, p_message: $('m').value });
+    $('msg').innerHTML = '<div class="alert success">Thank you! Your message has been sent. Our staff will contact you soon.</div>';
+    $('enq').reset();
+  } catch (err) { $('msg').innerHTML = `<div class="alert error">${esc(err.message)}</div>`; }
+  finally { $('send').disabled = false; $('send').textContent = 'Send Message'; }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Our Doctors | Ali Medical Complex, Multan</title>
+  <meta name="description" content="Find specialist doctors at Ali Medical Complex, Multan. See qualifications, timings, fees and reviews, and book online.">
+  <meta property="og:title" content="Our Doctors | Ali Medical Complex, Multan">
+  <meta property="og:description" content="Find specialist doctors at Ali Medical Complex, Multan. See qualifications, timings, fees and reviews, and book online.">
+  <meta name="theme-color" content="#0b6e74">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="site-header"></div>
+<main id="main">
+<div class="page-head"><div class="container"><h1>Our Doctors</h1><p class="muted" style="margin:4px 0 0">Search by name or specialty, then book online.</p></div></div>
+
+<section>
+  <div class="container">
+    <div class="toolbar">
+      <input type="search" id="q" placeholder="Search doctor or condition…" aria-label="Search doctors">
+      <div class="chips" id="chips"></div>
+      <label class="check"><input type="checkbox" id="today"> Available today</label>
+    </div>
+    <div class="grid cols-3" id="list"><p class="muted">Loading doctors…</p></div>
+  </div>
+</section>
+</main>
+<div id="site-footer"></div>
+<script src="common.js"></script>
+<script>
+let all = [], spec = new URLSearchParams(location.search).get('specialty') || '';
+const $ = id => document.getElementById(id);
+function draw() {
+  const q = $('q').value.trim().toLowerCase();
+  const list = all.filter(d => (!spec || d.specialty === spec)
+    && (!$('today').checked || (isBookable(d) && worksToday(d)))
+    && (!q || [d.name, d.specialty, d.qualifications, d.bio].join(' ').toLowerCase().includes(q)));
+  $('list').innerHTML = list.length ? list.map(doctorCard).join('') : '<p class="muted">No doctors match your search.</p>';
+  const specs = [...new Set(all.map(d => d.specialty))];
+  $('chips').innerHTML = ['', ...specs].map(s => `<button class="chip ${s === spec ? 'active' : ''}" data-s="${esc(s)}">${s ? esc(s) : 'All'}</button>`).join('');
+}
+$('chips').onclick = e => { const b = e.target.closest('.chip'); if (!b) return; spec = b.dataset.s; draw(); };
+$('q').oninput = draw; $('today').onchange = draw;
+rpc('amc_doctors').then(d => { all = d; draw(); }).catch(e => $('list').innerHTML = `<p class="muted">${esc(e.message)}</p>`);
+</script>
+</body>
+</html>

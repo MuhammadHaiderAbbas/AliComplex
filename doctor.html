@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Doctor Profile | Ali Medical Complex, Multan</title>
+  <meta name="description" content="Doctor profile, timings, fee and patient reviews at Ali Medical Complex, Multan.">
+  <meta property="og:title" content="Doctor Profile | Ali Medical Complex, Multan">
+  <meta property="og:description" content="Doctor profile, timings, fee and patient reviews at Ali Medical Complex, Multan.">
+  <meta name="theme-color" content="#0b6e74">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="site-header"></div>
+<main id="main">
+
+<section>
+  <div class="container" id="wrap"><p class="muted">Loading…</p></div>
+</section>
+</main>
+<div id="site-footer"></div>
+<script src="common.js"></script>
+<script>
+const id = Number(new URLSearchParams(location.search).get('id'));
+const wrap = document.getElementById('wrap');
+rpc('amc_doctor', { p_id: id }).then(d => {
+  document.title = `${d.name} – ${d.specialty} | Ali Medical Complex, Multan`;
+  const todayKey = ['sun','mon','tue','wed','thu','fri','sat'][new Date(todayPK() + 'T00:00:00').getDay()];
+  const bookable = isBookable(d);
+  wrap.innerHTML = `
+  <p class="small"><a href="doctors.html">← All doctors</a></p>
+  <div class="profile">
+    <div>
+      <div class="card">
+        <div class="profile-head">
+          <div class="avatar">${esc(initials(d.name))}</div>
+          <div>
+            <h1 style="margin:0">${esc(d.name)}</h1>
+            <span class="tag">${esc(d.specialty)}</span> ${d.title ? `<span class="muted">· ${esc(d.title)}</span>` : ''}
+            ${d.review_count ? `<div class="rating-line" style="margin-top:6px">${stars(d.rating)} <b>${d.rating}</b> <span class="muted">(${d.review_count} reviews)</span></div>` : ''}
+          </div>
+        </div>
+        ${d.qualifications ? `<h3 style="margin-top:22px">Qualifications</h3><p>${esc(d.qualifications)}</p>` : ''}
+        <h3>About</h3><p>${esc(d.bio)}</p>
+        <div class="doc-meta">
+          ${d.experience ? `<span>Experience: <b>${d.experience} years</b></span>` : ''}
+          ${d.fee ? `<span>Consultation fee: <b>Rs. ${d.fee.toLocaleString()}</b></span>` : ''}
+        </div>
+      </div>
+      <div class="card" style="margin-top:22px">
+        <h3>Patient reviews</h3>
+        ${d.reviews.length ? d.reviews.map(r => `<div class="review">${stars(r.rating)} <b>${esc(r.name)}</b> <span class="muted small">· ${fmtDate(r.date)}</span>
+            ${r.comment ? `<p style="margin:6px 0 0">${esc(r.comment)}</p>` : ''}</div>`).join('')
+          : '<p class="muted">No reviews yet. Patients can leave a review after their visit from the <a href="my-booking.html#review">My Booking</a> page.</p>'}
+      </div>
+    </div>
+    <aside class="sticky">
+      <div class="card">
+        <h3>Clinic timings</h3>
+        <p class="muted small" style="margin-top:-6px">Ali Medical Complex, Suraj Miani Road</p>
+        <table class="timetable">${DAY_ORDER.map(k => `<tr class="${k === todayKey ? 'today' : ''}"><td>${DAY_FULL[k]}</td>
+          <td style="text-align:right">${d.schedule[k] ? fmtTime(d.schedule[k][0]) + ' – ' + fmtTime(d.schedule[k][1]) : '<span class="muted">Off</span>'}</td></tr>`).join('')}</table>
+        ${d.leaves.length ? `<div class="alert info" style="margin:14px 0 0">On leave: ${d.leaves.slice(0, 6).map(x => fmtDate(x)).join(', ')}${d.leaves.length > 6 ? '…' : ''}</div>` : ''}
+        <div style="display:grid;gap:10px;margin-top:16px">
+          ${bookable ? `<a class="btn" href="book.html?doctor=${d.id}">Book Appointment</a>` : ''}
+          <a class="btn outline" href="${tel(HOSPITAL.phone1)}">Call ${esc(HOSPITAL.phone1)}</a>
+          <button class="btn outline" id="share">Share profile</button>
+        </div>
+      </div>
+    </aside>
+  </div>`;
+  document.getElementById('share').onclick = async () => {
+    const data = { title: d.name, text: `${d.name} – ${d.specialty} at Ali Medical Complex, Multan`, url: location.href };
+    try { if (navigator.share) await navigator.share(data); else { await navigator.clipboard.writeText(location.href); alert('Link copied.'); } } catch {}
+  };
+}).catch(e => { wrap.innerHTML = `<div class="nf"><h2>Doctor not found</h2><p class="muted">${esc(e.message)}</p><a class="btn" href="doctors.html">See all doctors</a></div>`; });
+</script>
+</body>
+</html>
