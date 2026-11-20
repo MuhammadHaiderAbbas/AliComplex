@@ -161,7 +161,10 @@ function renderChrome() {
     </div></div>
     <header class="site"><div class="container">
       <a class="brand" href="index.html"><img src="favicon.svg" alt="" class="logo-img"><span>${HOSPITAL.name}<small>Suraj Miani Road, Multan</small></span></a>
-      <button class="menu-btn" aria-label="Open menu" aria-expanded="false">☰</button>
+      <div class="head-right">
+        <button type="button" class="lang-btn" data-no-tr onclick="setLang(typeof LANG !== 'undefined' && LANG === 'ur' ? 'en' : 'ur')" aria-label="${typeof LANG !== 'undefined' && LANG === 'ur' ? 'Switch to English' : 'اردو میں دیکھیں'}">${typeof LANG !== 'undefined' && LANG === 'ur' ? 'English' : 'اردو'}</button>
+        <button class="menu-btn" aria-label="Open menu" aria-expanded="false">☰</button>
+      </div>
       <nav class="main" aria-label="Main">
         ${nav.map(([h, t]) => `<a href="${h}"${here === h ? ' class="active" aria-current="page"' : ''}>${t}</a>`).join('')}
         <a class="btn small" href="book.html">Book Appointment</a>

@@ -202,6 +202,40 @@
           <p class="muted small">All staff will be logged out after the change.</p>
         </form>
       </div>
+
+      <div class="grid cols-2" style="align-items:start;margin-top:22px">
+        <div class="card">
+          <h3>🔔 Live alerts in this panel</h3>
+          <p class="muted small">While this staff panel is open (on a computer or phone), new bookings and messages play a sound and show a pop-up. Checks every 30 seconds.</p>
+          <label class="check" style="margin:10px 0"><input type="checkbox" id="al-sound"> Play a sound</label>
+          <label class="check" style="margin:10px 0"><input type="checkbox" id="al-notify"> Show desktop/phone notification</label>
+          <p class="muted small" id="al-perm"></p>
+          <button class="btn small outline" type="button" id="al-test">Test alert</button>
+        </div>
+        <div class="card" id="tg-card">
+          <h3>📲 Telegram alerts (free)</h3>
+          <p class="muted small">Get every new booking, cancellation, message and review on staff phones instantly, even when this panel is closed.</p>
+          <div id="tg-status" class="alert info">Checking…</div>
+          <details id="tg-setup"><summary>Set up Telegram alerts</summary>
+            <ol class="small" style="padding-left:18px">
+              <li>Install <b>Telegram</b> on the phone that should get alerts.</li>
+              <li>In Telegram, search <b>@BotFather</b>, tap Start, send <code>/newbot</code>, and choose a name (e.g. <i>Ali Medical Alerts</i>) and a username ending in <i>bot</i>.</li>
+              <li>BotFather replies with a <b>token</b> like <code>123456789:AA…</code>. Paste it below.</li>
+              <li>Open your new bot in Telegram and press <b>Start</b> (or add the bot to your staff group and send any message there).</li>
+              <li>Click <b>Find my chat</b>, tick the chats to alert, then <b>Save</b> and <b>Send test</b>.</li>
+            </ol>
+            <div class="field"><label for="tg-token">Bot token</label><input id="tg-token" autocomplete="off" placeholder="123456789:AA…"></div>
+            <button class="btn small outline" type="button" id="tg-find">Find my chat</button>
+            <div id="tg-chats" style="margin:12px 0"></div>
+            <div class="field"><label for="tg-ids">Chat IDs (filled automatically; separate several with commas)</label><input id="tg-ids" placeholder="e.g. 123456789, -100987654321"></div>
+            <div class="actions-row"><button class="btn small" type="button" id="tg-save">Save</button></div>
+          </details>
+          <div class="actions-row">
+            <button class="btn small outline" type="button" id="tg-test">Send test</button>
+            <button class="btn small outline" type="button" id="tg-off">Turn off</button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -220,6 +254,7 @@ const addDays = (d, n) => { const x = new Date(d + 'T00:00:00'); x.setDate(x.get
 function logout() {
   if (token) rpc('amc_admin_logout', { p_token: token }).catch(() => {});
   token = null; try { sessionStorage.removeItem('amc_token'); } catch {}
+  clearInterval(pollTimer);
   $('app').classList.add('hidden'); $('logout').classList.add('hidden'); $('login').classList.remove('hidden');
 }
 async function start() {
@@ -227,6 +262,7 @@ async function start() {
   $('f-from').value = $('f-to').value = today;
   await loadDoctors();
   await loadDash();
+  startPolling();
 }
 $('login').addEventListener('submit', async e => {
   e.preventDefault();
@@ -240,7 +276,7 @@ $('login').addEventListener('submit', async e => {
 });
 $('logout').onclick = logout;
 
-const loaders = { dash: loadDash, appts: loadAppts, doctors: () => Promise.all([loadDoctors(), loadLeaves()]), enq: loadEnq, reviews: loadReviews, settings: loadSettings };
+const loaders = { dash: loadDash, appts: loadAppts, doctors: () => Promise.all([loadDoctors(), loadLeaves()]), enq: loadEnq, reviews: loadReviews, settings: () => Promise.all([loadSettings(), loadAlerts()]) };
 document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => {
   document.querySelectorAll('.tabs button').forEach(x => x.classList.toggle('active', x === b));
   Object.keys(loaders).forEach(k => $('tab-' + k).classList.toggle('hidden', k !== b.dataset.tab));
@@ -431,6 +467,94 @@ $('pw-form').addEventListener('submit', async e => {
     token = null; logout();
   } catch (err) { flash(err.message, 'error'); }
 });
+
+// ----- live alerts -----
+let pollTimer, since = null, unseen = 0;
+const baseTitle = document.title;
+const pref = (k, def) => { const v = storeGet('amc_' + k); return v === null ? def : v === '1'; };
+$('al-sound').checked = pref('sound', true); $('al-notify').checked = pref('notify', true);
+$('al-sound').onchange = e => storeSet('amc_sound', e.target.checked ? '1' : '0');
+$('al-notify').onchange = async e => {
+  storeSet('amc_notify', e.target.checked ? '1' : '0');
+  if (e.target.checked && 'Notification' in window && Notification.permission === 'default') await Notification.requestPermission();
+  showPerm();
+};
+function showPerm() {
+  $('al-perm').textContent = !('Notification' in window) ? 'This browser does not support notifications; sound and on-screen alerts still work.'
+    : Notification.permission === 'denied' ? 'Notifications are blocked for this site. Allow them in your browser’s site settings.'
+    : Notification.permission === 'granted' ? 'Notifications are allowed.' : 'Tick the box above to allow notifications.';
+}
+showPerm();
+function beep() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    [0, .22].forEach((t, i) => { const o = ctx.createOscillator(), g = ctx.createGain();
+      o.frequency.value = i ? 1046 : 784; o.connect(g); g.connect(ctx.destination);
+      g.gain.setValueAtTime(.25, ctx.currentTime + t); g.gain.exponentialRampToValueAtTime(.001, ctx.currentTime + t + .35);
+      o.start(ctx.currentTime + t); o.stop(ctx.currentTime + t + .4); });
+  } catch {}
+}
+function alertStaff(title, body) {
+  if ($('al-sound').checked) beep();
+  if ($('al-notify').checked && 'Notification' in window && Notification.permission === 'granted') {
+    try { new Notification(title, { body, icon: 'icon-192.png', tag: 'amc-' + Date.now() }); } catch {}
+  }
+  flash(`🔔 ${title}: ${body}`, 'info');
+  if (document.hidden) { unseen++; document.title = `(${unseen}) ${baseTitle}`; }
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden) { unseen = 0; document.title = baseTitle; } });
+async function poll() {
+  if (!token) return;
+  try {
+    const r = await aapi('amc_admin_new_since', { p_since: since || new Date().toISOString() });
+    if (since) {
+      r.appointments.forEach(a => alertStaff('New appointment', `${a.patient_name} with ${a.doctor}, ${fmtDate(a.date)} ${fmtTime(a.time)} (${a.ref})`));
+      if (r.enquiries) alertStaff('New message', `${r.enquiries} new message${r.enquiries > 1 ? 's' : ''} from the contact form`);
+      if (r.appointments.length || r.enquiries) {
+        const tab = document.querySelector('.tabs button.active').dataset.tab;
+        if (tab === 'dash' || tab === 'appts' || tab === 'enq') loaders[tab](); else loadDash();
+      }
+    }
+    since = r.now;
+  } catch {}
+}
+function startPolling() { clearInterval(pollTimer); since = null; poll(); pollTimer = setInterval(poll, 30000); }
+$('al-test').onclick = () => alertStaff('Test alert', 'This is how new bookings will look.');
+
+// ----- Telegram -----
+async function loadAlerts() {
+  const s = await aapi('amc_admin_alerts');
+  $('tg-status').className = 'alert ' + (s.telegram ? 'success' : 'info');
+  $('tg-status').textContent = s.telegram ? `Connected: alerts go to ${s.chats} Telegram chat${s.chats > 1 ? 's' : ''}.` : 'Not connected yet.';
+  $('tg-setup').open = !s.telegram;
+  $('tg-test').disabled = $('tg-off').disabled = !s.telegram;
+}
+$('tg-find').onclick = async () => {
+  const t = $('tg-token').value.trim();
+  if (!/^\d+:[\w-]{30,}$/.test(t)) return flash('Please paste the bot token from BotFather first.', 'error');
+  $('tg-chats').innerHTML = '<p class="muted small">Looking…</p>';
+  try {
+    const r = await (await fetch(`https://api.telegram.org/bot${t}/getUpdates`)).json();
+    if (!r.ok) throw new Error(r.description || 'Telegram rejected the token.');
+    const chats = new Map();
+    r.result.forEach(u => { const c = (u.message || u.my_chat_member || u.channel_post || {}).chat; if (c) chats.set(c.id, c.title || [c.first_name, c.last_name].filter(Boolean).join(' ') || c.username || c.id); });
+    if (!chats.size) { $('tg-chats').innerHTML = '<p class="alert error">No chats found. Open your bot in Telegram, press Start (or send a message in your group), then click Find my chat again.</p>'; return; }
+    $('tg-chats').innerHTML = [...chats].map(([id, name]) => `<label class="check"><input type="checkbox" class="tg-c" value="${id}" checked> ${esc(name)} <span class="muted small">(${id})</span></label>`).join('');
+    const sync = () => $('tg-ids').value = [...document.querySelectorAll('.tg-c:checked')].map(x => x.value).join(', ');
+    document.querySelectorAll('.tg-c').forEach(x => x.onchange = sync); sync();
+  } catch (e) { $('tg-chats').innerHTML = `<p class="alert error">${esc(e.message)}</p>`; }
+};
+$('tg-save').onclick = async () => {
+  if (!$('tg-token').value.trim() || !$('tg-ids').value.trim()) return flash('Please enter the bot token and at least one chat ID.', 'error');
+  try { await aapi('amc_admin_save_telegram', { p_bot_token: $('tg-token').value.trim(), p_chats: $('tg-ids').value });
+    $('tg-token').value = ''; flash('Telegram alerts saved. Click “Send test” to check.'); loadAlerts(); }
+  catch (e) { flash(e.message, 'error'); }
+};
+$('tg-test').onclick = async () => { try { await aapi('amc_admin_telegram_test'); flash('Test sent. Check Telegram in a few seconds.'); } catch (e) { flash(e.message, 'error'); } };
+$('tg-off').onclick = async () => {
+  if (!confirm('Turn off Telegram alerts?')) return;
+  try { await aapi('amc_admin_save_telegram', { p_bot_token: '', p_chats: '' }); flash('Telegram alerts turned off.'); loadAlerts(); } catch (e) { flash(e.message, 'error'); }
+};
 
 if (token) start().catch(logout);
 </script>

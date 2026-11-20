@@ -28,7 +28,14 @@ Runs completely free: the pages are hosted on GitHub Pages and bookings are stor
 - **Doctors & Leave:** add/edit doctors, fees, weekly timings, slot length, hide/show; add leave days (booking is blocked those days and patients to call are flagged).
 - **Enquiries:** messages from the contact form; reply on WhatsApp; mark read/replied; delete.
 - **Reviews:** approve or hide patient reviews before they show on the site.
-- **Settings:** announcement banner, phone numbers, WhatsApp number, email, Facebook, OPD text; change password.
+- **Settings:** announcement banner, phone numbers, WhatsApp number, email, Facebook, OPD text; booking alerts; change password.
+
+## Urdu version
+Every public page has an **English / اردو** button (top right). Urdu switches the layout to right-to-left with an Urdu (Nastaliq) font and remembers the choice on that device. Translations live in `i18n.js`: to change a wording, edit the Urdu text next to its English sentence. Doctor names, qualifications and bios entered in the staff panel are shown as typed. The staff panel stays in English.
+
+## Booking alerts for staff
+- **Live alerts:** while the staff panel is open, new bookings and messages play a sound, show a notification and update the counts (checked every 30 seconds).
+- **Telegram alerts (free):** staff panel → Settings → Telegram alerts. Create a bot with @BotFather, paste its token, press Start in the bot (or add it to a staff group), click *Find my chat*, Save, Send test. New bookings, cancellations, messages and reviews then arrive on staff phones even when the panel is closed.
 
 ## Other features
 - Floating WhatsApp button, announcement banner, mobile-friendly menu.
