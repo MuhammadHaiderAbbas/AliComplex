@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Staff Panel | Ali Medical Complex</title>
+  <link rel="stylesheet" href="/styles.css">
+  <style>
+    body { background: var(--bg-soft); }
+    .admin-bar { background: var(--primary-dark); color: #fff; }
+    .admin-bar .container { display: flex; justify-content: space-between; align-items: center; height: 60px; }
+    .admin-bar a, .admin-bar button { color: #fff; }
+    .tabs { display: flex; gap: 6px; margin: 22px 0 18px; }
+    .tabs button { background: #fff; border: 1px solid var(--border); padding: 9px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; font-family: inherit; color: var(--text); }
+    .tabs button.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 18px; }
+    .kpi { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
+    .kpi .n { font-size: 1.8rem; font-weight: 800; color: var(--primary); }
+    .filters { display: grid; grid-template-columns: 1fr 1fr 1fr 1.4fr auto; gap: 10px; margin-bottom: 14px; }
+    .table-wrap { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: .92rem; }
+    th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+    th { background: var(--bg-soft); font-weight: 600; white-space: nowrap; }
+    td select { padding: 5px 8px; font-size: .88rem; width: auto; }
+    .sched-grid { display: grid; grid-template-columns: 70px 1fr 1fr; gap: 6px 10px; align-items: center; }
+    .sched-grid input[type=time] { padding: 6px 8px; }
+    @media (max-width: 800px) { .kpis { grid-template-columns: 1fr 1fr; } .filters { grid-template-columns: 1fr 1fr; } }
+    @media print { .admin-bar, .tabs, .filters, .kpis, .no-print { display: none !important; } }
+  </style>
+</head>
+<body>
+<div class="admin-bar"><div class="container">
+  <b>Ali Medical Complex · Staff Panel</b>
+  <span><a href="/" target="_blank">View site</a> <button id="logout" class="btn small outline hidden" style="margin-left:12px;border-color:#fff;color:#fff">Log out</button></span>
+</div></div>
+
+<div class="container">
+  <form id="login" class="card" style="max-width:400px;margin:60px auto">
+    <h2>Staff Login</h2>
+    <div id="login-msg"></div>
+    <div class="field"><label for="pw">Password</label><input id="pw" type="password" autocomplete="current-password" required></div>
+    <button class="btn" style="width:100%">Log in</button>
+  </form>
+
+  <div id="app" class="hidden">
+    <div class="tabs">
+      <button class="active" data-tab="appts">Appointments</button>
+      <button data-tab="doctors">Doctors</button>
+    </div>
+    <div id="msg"></div>
+
+    <div id="tab-appts">
+      <div class="kpis">
+        <div class="kpi"><div class="muted">Today’s appointments</div><div class="n" id="k-today">–</div></div>
+        <div class="kpi"><div class="muted">Pending confirmation</div><div class="n" id="k-pending">–</div></div>
+        <div class="kpi"><div class="muted">Upcoming</div><div class="n" id="k-upcoming">–</div></div>
+        <div class="kpi"><div class="muted">All-time bookings</div><div class="n" id="k-total">–</div></div>
+      </div>
+      <div class="filters">
+        <input type="date" id="f-date">
+        <select id="f-doctor"><option value="">All doctors</option></select>
+        <select id="f-status"><option value="">All statuses</option><option>pending</option><option>confirmed</option><option>completed</option><option>cancelled</option><option>no-show</option></select>
+        <input id="f-q" placeholder="Search name, phone or ref">
+        <button class="btn outline small" onclick="window.print()">Print</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Date</th><th>Time</th><th>Ref</th><th>Patient</th><th>Phone</th><th>Doctor</th><th>Reason</th><th>Status</th></tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="tab-doctors" class="hidden">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <h3 style="margin:0">Doctors</h3>
+        <button class="btn small" onclick="editDoctor()">+ Add Doctor</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Name</th><th>Specialty</th><th>Fee</th><th>Timings</th><th>Shown on site</th><th></th></tr></thead>
+          <tbody id="doc-rows"></tbody>
+        </table>
+      </div>
+
+      <form id="doc-form" class="card hidden" style="margin-top:20px">
+        <h3 id="doc-form-title">Edit Doctor</h3>
+        <div class="row">
+          <div class="field"><label>Name *</label><input name="name" required></div>
+          <div class="field"><label>Specialty *</label><input name="specialty" required></div>
+        </div>
+        <div class="row3">
+          <div class="field"><label>Title</label><input name="title" placeholder="e.g. Assistant Professor"></div>
+          <div class="field"><label>Experience (years)</label><input name="experience" type="number" min="0"></div>
+          <div class="field"><label>Fee (Rs.)</label><input name="fee" type="number" min="0"></div>
+        </div>
+        <div class="field"><label>Qualifications</label><input name="qualifications"></div>
+        <div class="field"><label>Short bio</label><textarea name="bio" rows="2"></textarea></div>
+        <div class="row3">
+          <div class="field"><label>Slot length</label><select name="slot_minutes"><option>10</option><option>15</option><option>20</option><option>30</option><option>45</option><option>60</option></select></div>
+          <div class="field"><label>Display order</label><input name="sort_order" type="number"></div>
+          <div class="field"><label>Shown on site</label><select name="active"><option value="1">Yes</option><option value="0">No (hidden)</option></select></div>
+        </div>
+        <label>Weekly timings <span class="muted" style="font-weight:400">(leave a day empty if the doctor is off; leave all empty for phone-only booking)</span></label>
+        <div class="sched-grid" id="sched"></div>
+        <div style="display:flex;gap:10px;margin-top:18px">
+          <button class="btn" type="submit">Save</button>
+          <button class="btn outline" type="button" onclick="$('doc-form').classList.add('hidden')">Close</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script src="/common.js"></script>
+<script>
+// common.js renders chrome only if the placeholders exist
+document.removeEventListener('DOMContentLoaded', renderChrome);
+const $ = id => document.getElementById(id);
+let token = null;
+try { token = sessionStorage.getItem('amc_token'); } catch {}
+let doctors = [], editingId = null;
+
+const aapi = (url, opts = {}) => api(url, { ...opts, headers: { Authorization: 'Bearer ' + token } }).catch(e => {
+  if (e.status === 401) logout();
+  throw e;
+});
+const flash = (t, type = 'success') => { $('msg').innerHTML = `<div class="alert ${type}">${esc(t)}</div>`; setTimeout(() => $('msg').innerHTML = '', 3500); };
+
+function logout() {
+  token = null; try { sessionStorage.removeItem('amc_token'); } catch {}
+  $('app').classList.add('hidden'); $('logout').classList.add('hidden'); $('login').classList.remove('hidden');
+}
+async function start() {
+  $('login').classList.add('hidden'); $('app').classList.remove('hidden'); $('logout').classList.remove('hidden');
+  await loadDoctors();
+  const s = await aapi('/api/admin/stats');
+  $('f-date').value = s.todayDate;
+  loadAppts();
+}
+
+$('login').addEventListener('submit', async e => {
+  e.preventDefault();
+  try {
+    token = (await api('/api/admin/login', { method: 'POST', body: JSON.stringify({ password: $('pw').value }) })).token;
+    try { sessionStorage.setItem('amc_token', token); } catch {}
+    $('pw').value = ''; $('login-msg').innerHTML = '';
+    start();
+  } catch (err) { $('login-msg').innerHTML = `<div class="alert error">${esc(err.message)}</div>`; }
+});
+$('logout').onclick = logout;
+
+document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('.tabs button').forEach(x => x.classList.toggle('active', x === b));
+  $('tab-appts').classList.toggle('hidden', b.dataset.tab !== 'appts');
+  $('tab-doctors').classList.toggle('hidden', b.dataset.tab !== 'doctors');
+});
+
+// ----- appointments -----
+async function loadStats() {
+  const s = await aapi('/api/admin/stats');
+  $('k-today').textContent = s.today; $('k-pending').textContent = s.pending;
+  $('k-upcoming').textContent = s.upcoming; $('k-total').textContent = s.total;
+}
+async function loadAppts() {
+  loadStats();
+  const p = new URLSearchParams();
+  if ($('f-date').value) p.set('date', $('f-date').value);
+  if ($('f-doctor').value) p.set('doctorId', $('f-doctor').value);
+  if ($('f-status').value) p.set('status', $('f-status').value);
+  if ($('f-q').value.trim()) p.set('q', $('f-q').value.trim());
+  const rows = await aapi('/api/admin/appointments?' + p);
+  $('rows').innerHTML = rows.length ? rows.map(a => `<tr>
+    <td>${fmtDate(a.date)}</td><td>${fmtTime(a.time)}</td><td><b>${esc(a.ref)}</b></td>
+    <td>${esc(a.patient_name)}<div class="muted" style="font-size:.8rem">${[a.age ? a.age + ' yrs' : '', a.gender || ''].filter(Boolean).join(', ')}</div></td>
+    <td><a href="tel:${esc(a.phone)}">${esc(a.phone)}</a></td>
+    <td>${esc(a.doctor)}<div class="muted" style="font-size:.8rem">${esc(a.specialty)}</div></td>
+    <td style="max-width:220px">${esc(a.reason)}</td>
+    <td><span class="badge ${a.status}">${a.status}</span><br>
+      <select class="no-print" data-id="${a.id}" style="margin-top:4px">
+        ${['pending', 'confirmed', 'completed', 'cancelled', 'no-show'].map(s => `<option ${s === a.status ? 'selected' : ''}>${s}</option>`).join('')}
+      </select></td></tr>`).join('')
+    : '<tr><td colspan="8" class="muted center" style="padding:30px">No appointments found for these filters.</td></tr>';
+}
+$('rows').addEventListener('change', async e => {
+  if (!e.target.matches('select[data-id]')) return;
+  try { await aapi('/api/admin/appointments/' + e.target.dataset.id, { method: 'PATCH', body: JSON.stringify({ status: e.target.value }) }); flash('Status updated.'); }
+  catch (err) { flash(err.message, 'error'); }
+  loadAppts();
+});
+['f-date', 'f-doctor', 'f-status'].forEach(id => $(id).addEventListener('change', loadAppts));
+let qTimer; $('f-q').addEventListener('input', () => { clearTimeout(qTimer); qTimer = setTimeout(loadAppts, 300); });
+
+// ----- doctors -----
+async function loadDoctors() {
+  doctors = await aapi('/api/admin/doctors');
+  $('f-doctor').innerHTML = '<option value="">All doctors</option>' + doctors.map(d => `<option value="${d.id}">${esc(d.name)}</option>`).join('');
+  $('doc-rows').innerHTML = doctors.map(d => `<tr>
+    <td><b>${esc(d.name)}</b></td><td>${esc(d.specialty)}</td><td>${d.fee ? 'Rs. ' + d.fee.toLocaleString() : '–'}</td>
+    <td style="max-width:280px">${esc(scheduleText(d.schedule))}</td><td>${d.active ? 'Yes' : 'No'}</td>
+    <td><button class="btn small outline" onclick="editDoctor(${d.id})">Edit</button></td></tr>`).join('');
+}
+function editDoctor(id) {
+  const d = doctors.find(x => x.id === id) || { name: '', specialty: '', title: '', experience: 0, fee: 0, qualifications: '', bio: '', slot_minutes: 20, sort_order: doctors.length, active: true, schedule: {} };
+  editingId = id || null;
+  $('doc-form-title').textContent = id ? 'Edit ' + d.name : 'Add Doctor';
+  const f = $('doc-form');
+  ['name', 'specialty', 'title', 'experience', 'fee', 'qualifications', 'bio', 'slot_minutes', 'sort_order'].forEach(k => f.elements[k].value = d[k] ?? '');
+  f.elements.active.value = d.active ? '1' : '0';
+  $('sched').innerHTML = DAY_ORDER.map(day => `<b>${DAY_NAMES[day]}</b>
+    <input type="time" data-day="${day}" data-i="0" value="${d.schedule[day]?.[0] || ''}">
+    <input type="time" data-day="${day}" data-i="1" value="${d.schedule[day]?.[1] || ''}">`).join('');
+  f.classList.remove('hidden');
+  f.scrollIntoView({ behavior: 'smooth' });
+}
+$('doc-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const f = e.target, body = {};
+  ['name', 'specialty', 'title', 'experience', 'fee', 'qualifications', 'bio', 'slot_minutes', 'sort_order'].forEach(k => body[k] = f.elements[k].value);
+  body.active = f.elements.active.value === '1';
+  body.schedule = {};
+  DAY_ORDER.forEach(day => {
+    const a = f.querySelector(`[data-day=${day}][data-i="0"]`).value, b = f.querySelector(`[data-day=${day}][data-i="1"]`).value;
+    if (a && b) body.schedule[day] = [a, b];
+  });
+  try {
+    await aapi(editingId ? '/api/admin/doctors/' + editingId : '/api/admin/doctors', { method: editingId ? 'PUT' : 'POST', body: JSON.stringify(body) });
+    flash('Doctor saved.'); f.classList.add('hidden'); loadDoctors();
+  } catch (err) { flash(err.message, 'error'); }
+});
+
+if (token) start().catch(logout);
+</script>
+</body>
+</html>

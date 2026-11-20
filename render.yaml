@@ -1,0 +1,19 @@
+# One-click deploy on Render (https://render.com): New > Blueprint > pick this repo.
+services:
+  - type: web
+    name: ali-medical-complex
+    runtime: node
+    plan: starter            # a persistent disk needs a paid plan; the free plan would lose bookings on every restart
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: DATA_DIR
+        value: /var/data
+      - key: ADMIN_PASSWORD
+        sync: false          # Render asks you to type this in during setup
+    disk:
+      name: data
+      mountPath: /var/data
+      sizeGB: 1
