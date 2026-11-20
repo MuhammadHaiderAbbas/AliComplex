@@ -1,6 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100"><defs><linearGradient id="mg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#13959c"/><stop offset="1" stop-color="#08555a"/></linearGradient></defs>
-  <path d="M50 4C63 12 77 14.5 90 14.5V46C90 72 73 88.5 50 96C27 88.5 10 72 10 46V14.5C23 14.5 37 12 50 4Z" fill="url(#mg)"/>
-  <path d="M50 9.5C62 16.5 74.5 19 85 19.2V46C85 69 70 83.5 50 90.6" fill="none" stroke="#ffffff" stroke-opacity=".18" stroke-width="2"/>
-  <rect x="40" y="24" width="20" height="54" rx="5" fill="#ffffff"/>
-  <rect x="23" y="41" width="54" height="20" rx="5" fill="#ffffff"/>
-  <path d="M15 51H33.5L39 41.5L46 61.5L52.5 43.5L57 51H85" fill="none" stroke="#e8a33d" stroke-width="4.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 114 120" width="114" height="120"><defs>
+    <linearGradient id="bc" x1="0" y1="0" x2="0.35" y2="1"><stop offset="0" stop-color="#1e8de0"/><stop offset=".55" stop-color="#1667c7"/><stop offset="1" stop-color="#0b3f9a"/></linearGradient>
+    <linearGradient id="bt" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#14b3c4"/><stop offset="1" stop-color="#0a8fa3"/></linearGradient>
+  </defs>
+  <rect x="38" y="8" width="38" height="104" rx="11" fill="url(#bc)"/>
+  <rect x="6" y="38" width="102" height="40" rx="11" fill="url(#bc)"/>
+  <path d="M6 63h102v4c0 6-5 11-11 11H17C11 78 6 73 6 67z" fill="#0a3a8e" opacity=".35"/>
+  <path d="M83 9c19 6 21 30 2 50C68 76 54 90 52 113c-6-20 3-36 20-52 16-15 22-35 11-52z" fill="url(#bt)"/>
+  <circle cx="54" cy="31" r="9.5" fill="#ffffff"/>
+  <path d="M17 54c14-5 33-5 47-11 7-3 13-8 17-14-3 12-12 21-22 28-10 7-16 17-19 31-1 6-2 12 0 19-8-13-8-29 0-41-6-6-13-9-23-12z" fill="#ffffff"/>
+  <path d="M58 66h17l4-12 6 25 5-17 3 4h15" fill="none" stroke="#ffffff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>

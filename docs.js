@@ -1,7 +1,7 @@
 // ===== Documents: letterhead, payslip, letters, organisation chart =====
 // Used by the website (team / letterhead pages) and the staff panel (printing).
 
-const LOGO_SVG = `<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 4C63 12 77 14.5 90 14.5V46C90 72 73 88.5 50 96C27 88.5 10 72 10 46V14.5C23 14.5 37 12 50 4Z" fill="currentColor"/><rect x="40" y="24" width="20" height="54" rx="5" fill="#fff"/><rect x="23" y="41" width="54" height="20" rx="5" fill="#fff"/><path d="M15 51H33.5L39 41.5L46 61.5L52.5 43.5L57 51H85" fill="none" stroke="#e8a33d" stroke-width="4.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const LOGO_SVG = `<svg viewBox="0 0 114 120" aria-hidden="true"><rect x="38" y="8" width="38" height="104" rx="11" fill="currentColor"/><rect x="6" y="38" width="102" height="40" rx="11" fill="currentColor"/><path class="lg-sw" d="M83 9c19 6 21 30 2 50C68 76 54 90 52 113c-6-20 3-36 20-52 16-15 22-35 11-52z" fill="#14b3c4"/><circle cx="54" cy="31" r="9.5" fill="#fff"/><path d="M17 54c14-5 33-5 47-11 7-3 13-8 17-14-3 12-12 21-22 28-10 7-16 17-19 31-1 6-2 12 0 19-8-13-8-29 0-41-6-6-13-9-23-12z" fill="#fff"/></svg>`;
 
 function money(n) { return Number(n || 0).toLocaleString('en-PK'); }
 
@@ -31,7 +31,7 @@ function letterheadHTML(content, opts = {}) {
   const contacts = [H.phone1, H.phone2, web, H.email, H.address].filter(Boolean);
   return `<div class="lh-page" data-no-tr>
     <div class="lh-bar"></div>
-    <div class="lh-watermark">${LOGO_SVG.replace(/<path d="M15 51[^>]*>/, '')}</div>
+    <div class="lh-watermark">${LOGO_SVG}</div>
     <header class="lh-head">
       <div class="lh-brand"><img class="lh-lockup" src="brand/logo-horizontal.svg" alt="${esc(H.legal_name || 'Ali Medical Complex')}">
         ${H.legal_name && H.legal_name !== 'Ali Medical Complex' ? `<div class="lh-name">${esc(H.legal_name)}</div>` : ''}</div>

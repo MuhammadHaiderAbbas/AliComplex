@@ -41,8 +41,10 @@ Runs completely free: the pages are hosted on GitHub Pages and bookings are stor
 - **Payroll → Tax & PF settings:** yearly tax slabs (pre-filled with 2025-26 salaried rates; **check against the current Finance Act each July**), default PF %, change payroll password.
 - **Letters:** general letters and employment reference letters on the letterhead, with reference numbers (AMC/YYYY/NNNN) and verification codes; reference letters fill in from employee records and the org chart, and can attach the org chart. Issued letters are kept in a register and can be voided.
 
-## Logo
-Logo files are in `brand/`: horizontal and stacked versions (SVG and PNG), white versions for dark backgrounds, the icon on its own, and `og-image.png` (preview picture when the link is shared). App and browser icons: `favicon.svg`, `favicon-32.png`, `apple-touch-icon.png`, `icon-192.png`, `icon-512.png`. The SVGs have the lettering converted to shapes, so they print correctly anywhere.
+## Logo and colours
+The logo is a blue cross with a person figure, a teal swoosh and a heartbeat line, with the name in navy and teal and the tagline "Care you can trust • Multan". Files are in `brand/`: horizontal and stacked versions (SVG and PNG), white versions for dark backgrounds, the icon on its own, and `og-image.png` (the picture shown when the link is shared). Browser and app icons: `favicon.svg`, `favicon-32.png`, `apple-touch-icon.png`, `icon-192.png`, `icon-512.png`. The earlier teal shield logo is kept in `brand/shield-logo/`.
+
+Site colours (top of `styles.css`): navy `#0d2b5c`, blue `#1257b8`, teal accent `#14b3c4`.
 
 ## Photos, gallery and design
 - **Profile photos:** Staff panel → Doctors (Edit) or Org Chart (Edit) → choose a photo. It is cropped square and resized automatically. Until a photo is added, an illustrated avatar is shown.
