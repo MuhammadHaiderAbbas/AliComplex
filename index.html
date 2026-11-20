@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Ali Medical Complex, Multan | Specialist Doctors & Online Appointments</title>
   <meta name="description" content="Ali Medical Complex, Chungi No. 1, Suraj Miani Road, Multan. Book appointments online with specialist doctors in endocrinology, pediatrics, internal medicine and psychology.">
-  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 <div id="site-header"></div>
@@ -17,7 +17,7 @@
       <h1 style="margin-top:14px">Trusted specialist care for you and your family</h1>
       <p class="lead">Consult experienced doctors in diabetes &amp; hormones, child health, internal medicine and mental health. Book your visit online in under a minute.</p>
       <div class="actions">
-        <a class="btn" href="/book.html">Book an Appointment</a>
+        <a class="btn" href="book.html">Book an Appointment</a>
         <a class="btn outline" href="tel:0612039965">Call 061-2039965</a>
       </div>
     </div>
@@ -97,22 +97,22 @@
     <div class="grid cols-3">
       <div class="card"><h3>📍 Address</h3><p class="muted">Chungi No. 1, Suraj Miani Road, Multan, Punjab</p><a class="btn outline small" id="dir-link" target="_blank" rel="noopener">Get Directions</a></div>
       <div class="card"><h3>📞 Phone</h3><p><a href="tel:0612039965">061-2039965</a><br><a href="tel:03000270600">0300-0270600</a></p><p class="muted" style="margin:0">Call for appointments and enquiries.</p></div>
-      <div class="card"><h3>🕒 Timings</h3><p class="muted">OPD: Monday – Saturday. Each doctor’s timings are shown on their profile.</p><a class="btn small" href="/book.html">Book Online</a></div>
+      <div class="card"><h3>🕒 Timings</h3><p class="muted">OPD: Monday – Saturday. Each doctor’s timings are shown on their profile.</p><a class="btn small" href="book.html">Book Online</a></div>
     </div>
   </div>
 </section>
 
 <div class="cta"><div class="container">
   <div><h2>Need to see a specialist?</h2><p style="margin:6px 0 0;opacity:.9">Book online now and skip the queue.</p></div>
-  <a class="btn light" href="/book.html">Book Appointment</a>
+  <a class="btn light" href="book.html">Book Appointment</a>
 </div></div>
 
 <div id="site-footer"></div>
 
-<script src="/common.js"></script>
+<script src="common.js"></script>
 <script>
   document.getElementById('dir-link').href = HOSPITAL.mapsUrl;
-  api('/api/doctors').then(docs => {
+  rpc('amc_doctors').then(docs => {
     document.getElementById('stat-docs').textContent = docs.length;
     document.getElementById('doctor-list').innerHTML = docs.map(d => {
       const bookable = Object.keys(d.schedule).length > 0;
@@ -126,7 +126,7 @@
           ${d.fee ? `<span>Fee: <b>Rs. ${d.fee.toLocaleString()}</b></span>` : ''}
         </div>
         <div class="timing">🕒 ${esc(scheduleText(d.schedule))}</div>
-        ${bookable ? `<a class="btn" href="/book.html?doctor=${d.id}">Book Appointment</a>`
+        ${bookable ? `<a class="btn" href="book.html?doctor=${d.id}">Book Appointment</a>`
                    : `<a class="btn outline" href="tel:0612039965">Call to Book</a>`}
       </div>`;
     }).join('');

@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>My Booking | Ali Medical Complex, Multan</title>
-  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 <div id="site-header"></div>
@@ -21,7 +21,7 @@
   </div>
 </section>
 <div id="site-footer"></div>
-<script src="/common.js"></script>
+<script src="common.js"></script>
 <script>
 const $ = id => document.getElementById(id);
 const showMsg = (t, type = 'error') => { $('msg').innerHTML = t ? `<div class="alert ${type}">${esc(t)}</div>` : ''; };
@@ -29,7 +29,7 @@ const showMsg = (t, type = 'error') => { $('msg').innerHTML = t ? `<div class="a
 async function find() {
   showMsg('');
   try {
-    const a = await api(`/api/appointments/lookup?ref=${encodeURIComponent($('ref').value)}&phone=${encodeURIComponent($('phone').value)}`);
+    const a = await rpc('amc_lookup', { p_ref: $('ref').value, p_phone: $('phone').value });
     const canCancel = ['pending', 'confirmed'].includes(a.status);
     $('result').innerHTML = `<h3>Booking ${esc(a.ref)} <span class="badge ${a.status}">${esc(a.status)}</span></h3>
       <div class="summary">
@@ -46,7 +46,7 @@ async function find() {
 async function cancel() {
   if (!confirm('Cancel this appointment?')) return;
   try {
-    await api('/api/appointments/cancel', { method: 'POST', body: JSON.stringify({ ref: $('ref').value, phone: $('phone').value }) });
+    await rpc('amc_cancel', { p_ref: $('ref').value, p_phone: $('phone').value });
     showMsg('Your appointment has been cancelled.', 'success');
     find();
   } catch (e) { showMsg(e.message); }

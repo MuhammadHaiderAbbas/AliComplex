@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex">
   <title>Staff Panel | Ali Medical Complex</title>
-  <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="styles.css">
   <style>
     body { background: var(--bg-soft); }
     .admin-bar { background: var(--primary-dark); color: #fff; }
@@ -32,7 +32,7 @@
 <body>
 <div class="admin-bar"><div class="container">
   <b>Ali Medical Complex · Staff Panel</b>
-  <span><a href="/" target="_blank">View site</a> <button id="logout" class="btn small outline hidden" style="margin-left:12px;border-color:#fff;color:#fff">Log out</button></span>
+  <span><a href="index.html" target="_blank">View site</a> <button id="chpw" class="btn small outline hidden" style="margin-left:12px;border-color:#fff;color:#fff">Change password</button> <button id="logout" class="btn small outline hidden" style="margin-left:12px;border-color:#fff;color:#fff">Log out</button></span>
 </div></div>
 
 <div class="container">
@@ -113,7 +113,7 @@
   </div>
 </div>
 
-<script src="/common.js"></script>
+<script src="common.js"></script>
 <script>
 // common.js renders chrome only if the placeholders exist
 document.removeEventListener('DOMContentLoaded', renderChrome);
@@ -122,20 +122,21 @@ let token = null;
 try { token = sessionStorage.getItem('amc_token'); } catch {}
 let doctors = [], editingId = null;
 
-const aapi = (url, opts = {}) => api(url, { ...opts, headers: { Authorization: 'Bearer ' + token } }).catch(e => {
+const aapi = (fn, args = {}) => rpc(fn, { p_token: token, ...args }).catch(e => {
   if (e.status === 401) logout();
   throw e;
 });
 const flash = (t, type = 'success') => { $('msg').innerHTML = `<div class="alert ${type}">${esc(t)}</div>`; setTimeout(() => $('msg').innerHTML = '', 3500); };
 
 function logout() {
+  if (token) rpc('amc_admin_logout', { p_token: token }).catch(() => {});
   token = null; try { sessionStorage.removeItem('amc_token'); } catch {}
-  $('app').classList.add('hidden'); $('logout').classList.add('hidden'); $('login').classList.remove('hidden');
+  $('app').classList.add('hidden'); $('logout').classList.add('hidden'); $('chpw').classList.add('hidden'); $('login').classList.remove('hidden');
 }
 async function start() {
-  $('login').classList.add('hidden'); $('app').classList.remove('hidden'); $('logout').classList.remove('hidden');
+  $('login').classList.add('hidden'); $('app').classList.remove('hidden'); $('logout').classList.remove('hidden'); $('chpw').classList.remove('hidden');
   await loadDoctors();
-  const s = await aapi('/api/admin/stats');
+  const s = await aapi('amc_admin_stats');
   $('f-date').value = s.todayDate;
   loadAppts();
 }
@@ -143,13 +144,21 @@ async function start() {
 $('login').addEventListener('submit', async e => {
   e.preventDefault();
   try {
-    token = (await api('/api/admin/login', { method: 'POST', body: JSON.stringify({ password: $('pw').value }) })).token;
+    token = await rpc('amc_admin_login', { p_password: $('pw').value });
+    if (!token) throw new Error('Wrong password.');
     try { sessionStorage.setItem('amc_token', token); } catch {}
     $('pw').value = ''; $('login-msg').innerHTML = '';
     start();
   } catch (err) { $('login-msg').innerHTML = `<div class="alert error">${esc(err.message)}</div>`; }
 });
 $('logout').onclick = logout;
+$('chpw').onclick = async () => {
+  const oldPw = prompt('Current password:'); if (!oldPw) return;
+  const newPw = prompt('New password (at least 8 characters):'); if (!newPw) return;
+  if (newPw !== prompt('Type the new password again:')) return flash('Passwords did not match.', 'error');
+  try { await aapi('amc_admin_change_password', { p_old: oldPw, p_new: newPw }); alert('Password changed. Please log in again.'); token = null; logout(); }
+  catch (e) { flash(e.message, 'error'); }
+};
 
 document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => {
   document.querySelectorAll('.tabs button').forEach(x => x.classList.toggle('active', x === b));
@@ -159,18 +168,15 @@ document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => {
 
 // ----- appointments -----
 async function loadStats() {
-  const s = await aapi('/api/admin/stats');
+  const s = await aapi('amc_admin_stats');
   $('k-today').textContent = s.today; $('k-pending').textContent = s.pending;
   $('k-upcoming').textContent = s.upcoming; $('k-total').textContent = s.total;
 }
 async function loadAppts() {
   loadStats();
-  const p = new URLSearchParams();
-  if ($('f-date').value) p.set('date', $('f-date').value);
-  if ($('f-doctor').value) p.set('doctorId', $('f-doctor').value);
-  if ($('f-status').value) p.set('status', $('f-status').value);
-  if ($('f-q').value.trim()) p.set('q', $('f-q').value.trim());
-  const rows = await aapi('/api/admin/appointments?' + p);
+  const rows = await aapi('amc_admin_appointments', {
+    p_date: $('f-date').value || null, p_doctor_id: $('f-doctor').value ? Number($('f-doctor').value) : null,
+    p_status: $('f-status').value || null, p_q: $('f-q').value.trim() || null });
   $('rows').innerHTML = rows.length ? rows.map(a => `<tr>
     <td>${fmtDate(a.date)}</td><td>${fmtTime(a.time)}</td><td><b>${esc(a.ref)}</b></td>
     <td>${esc(a.patient_name)}<div class="muted" style="font-size:.8rem">${[a.age ? a.age + ' yrs' : '', a.gender || ''].filter(Boolean).join(', ')}</div></td>
@@ -185,7 +191,7 @@ async function loadAppts() {
 }
 $('rows').addEventListener('change', async e => {
   if (!e.target.matches('select[data-id]')) return;
-  try { await aapi('/api/admin/appointments/' + e.target.dataset.id, { method: 'PATCH', body: JSON.stringify({ status: e.target.value }) }); flash('Status updated.'); }
+  try { await aapi('amc_admin_set_status', { p_id: Number(e.target.dataset.id), p_status: e.target.value }); flash('Status updated.'); }
   catch (err) { flash(err.message, 'error'); }
   loadAppts();
 });
@@ -194,7 +200,7 @@ let qTimer; $('f-q').addEventListener('input', () => { clearTimeout(qTimer); qTi
 
 // ----- doctors -----
 async function loadDoctors() {
-  doctors = await aapi('/api/admin/doctors');
+  doctors = await aapi('amc_admin_doctors');
   $('f-doctor').innerHTML = '<option value="">All doctors</option>' + doctors.map(d => `<option value="${d.id}">${esc(d.name)}</option>`).join('');
   $('doc-rows').innerHTML = doctors.map(d => `<tr>
     <td><b>${esc(d.name)}</b></td><td>${esc(d.specialty)}</td><td>${d.fee ? 'Rs. ' + d.fee.toLocaleString() : '–'}</td>
@@ -225,7 +231,7 @@ $('doc-form').addEventListener('submit', async e => {
     if (a && b) body.schedule[day] = [a, b];
   });
   try {
-    await aapi(editingId ? '/api/admin/doctors/' + editingId : '/api/admin/doctors', { method: editingId ? 'PUT' : 'POST', body: JSON.stringify(body) });
+    await aapi('amc_admin_save_doctor', { p_id: editingId, p: body });
     flash('Doctor saved.'); f.classList.add('hidden'); loadDoctors();
   } catch (err) { flash(err.message, 'error'); }
 });

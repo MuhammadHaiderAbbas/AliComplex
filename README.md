@@ -1,34 +1,28 @@
 # Ali Medical Complex – Website & Appointment System
 
-A simple, professional hospital website with online appointment booking and a staff panel.
+Website for Ali Medical Complex, Chungi No. 1, Suraj Miani Road, Multan, with online appointment booking and a staff panel.
 
-## What's included
-- **Public website** (`/`): home, specialties, doctors with timings and fees, about, FAQ, contact and directions.
-- **Online booking** (`/book.html`): patient picks a doctor, date and free time slot, enters details, gets a reference number (e.g. `AMC-6C8DC1`). Taken slots can't be double-booked; past times are hidden (Pakistan time).
-- **My Booking** (`/my-booking.html`): patient checks status or cancels using reference + phone number.
-- **Staff panel** (`/admin.html`): password login; today's / pending / upcoming counts; filter appointments by date, doctor, status or search; change status (pending → confirmed → completed / cancelled / no-show); print the day's list; add or edit doctors, fees and weekly timings, or hide a doctor.
+**Live site:** https://muhammadhaiderabbas.github.io/AliComplex/
+**Staff panel:** https://muhammadhaiderabbas.github.io/AliComplex/admin.html
 
-## Run it
-Needs Node.js 22 or newer.
+Runs completely free: the pages are hosted on GitHub Pages and bookings are stored in Supabase (free plan).
 
-    npm install
-    ADMIN_PASSWORD=choose-a-strong-password npm start
+## Pages
+- `index.html`: home, specialties, doctors with timings and fees, about, FAQ, contact and directions.
+- `book.html`: patient picks a doctor, date and free time slot, enters details, and gets a reference number (e.g. `AMC-6C8DC1`). Taken slots can't be double-booked; past times are hidden (Pakistan time); one phone number can hold at most 3 upcoming bookings.
+- `my-booking.html`: patient checks status or cancels with reference + phone number.
+- `admin.html`: staff login; today / pending / upcoming counts; filter and search appointments; change status (pending, confirmed, completed, cancelled, no-show); print; add or edit doctors, fees and weekly timings, or hide a doctor; change the staff password.
 
-Open http://localhost:3000. Data is stored in `data/hospital.db` (SQLite). Back this file up regularly.
+## How it works
+- Plain HTML, CSS and JavaScript, no build step. Edit a file, push to `main`, and GitHub Pages updates the site in about a minute.
+- Data lives in Supabase in a private `amc` schema that is not reachable directly from the internet. The site only calls the `amc_*` database functions (`amc_doctors`, `amc_slots`, `amc_book`, `amc_lookup`, `amc_cancel`, and the password-protected `amc_admin_*` functions).
+- The Supabase URL and publishable key are in `common.js`. The publishable key is designed to be public.
+- Staff login: 10 wrong attempts lock login for 15 minutes; sessions last 12 hours.
 
-Settings (environment variables): `PORT` (default 3000), `ADMIN_PASSWORD` (default `admin123` — change it!), `DATA_DIR` (where the database lives).
+## Editing content
+- Doctors, fees and timings: staff panel → Doctors (no code needed).
+- Hospital name, address and phone numbers: top of `common.js` and in `index.html`.
+- Colours: CSS variables at the top of `styles.css`.
 
-## Going live
-Any host that runs Node.js with a persistent disk works (a small VPS, Render, Railway, Hostinger VPS, etc.). Put it behind HTTPS and set a strong `ADMIN_PASSWORD`.
-
-## Edit content
-- Doctors, fees, timings: in the Staff panel → Doctors (no code needed).
-- Hospital name, address, phone numbers: `public/common.js` (top of file) and `public/index.html`.
-- Colours: `public/styles.css` (`:root` variables at the top).
-
-## Deploy on Render
-1. Sign in at https://render.com with GitHub.
-2. New → Blueprint → choose this repository. Render reads `render.yaml`.
-3. Enter an `ADMIN_PASSWORD` when asked, then Apply. You'll get a link like `https://ali-medical-complex.onrender.com`.
-
-The blueprint uses the Starter plan (about $7/month) because bookings are saved on a disk, and Render's free plan has no permanent disk.
+## Note on Supabase free plan
+Free Supabase projects pause after about a week with no activity. Regular bookings keep it active; if it ever pauses, restore it from the Supabase dashboard.
