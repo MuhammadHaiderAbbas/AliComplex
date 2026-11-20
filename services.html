@@ -37,7 +37,7 @@ function render(docs) {
     const ds = s.key ? docs.filter(d => d.specialty.toLowerCase().includes(s.key.toLowerCase())) : [];
     const id = s.name.toLowerCase().replace(/[^a-z]+/g, '-');
     return `<div class="service-block" id="${id}">
-      <div class="ico">${s.icon}</div>
+      <div class="ico">${icon(s.icon)}</div>
       <div><h2>${s.name}</h2><p class="muted">${s.short}</p>
         <h3 style="font-size:1rem;margin-top:14px">Common conditions treated</h3>
         <ul class="cond">${s.conditions.map(c => `<li>${c}</li>`).join('')}</ul>

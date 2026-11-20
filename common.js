@@ -19,6 +19,7 @@ const HOSPITAL = {
   legal_name: 'Ali Medical Complex',
   signatory_name: 'Dr. Shahid Javed Ch.',
   signatory_title: 'Director',
+  provisional_note: '',
   announcement: ''
 };
 HOSPITAL.mapsUrl = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent('Ali Medical Complex, Chungi No 1, Suraj Miani Road, Multan');
@@ -76,29 +77,29 @@ const isBookable = d => Object.keys(d.schedule || {}).length > 0;
 
 // Specialty info used on Home, Services and Doctors pages
 const SPECIALTIES = [
-  { key: 'Ophthalmologist', name: 'Eye Care', icon: '👁️', short: 'Eye check-ups, vision problems, eye infections, cataract and glaucoma assessment.',
+  { key: 'Ophthalmologist', name: 'Eye Care', icon: 'eye', short: 'Eye check-ups, vision problems, eye infections, cataract and glaucoma assessment.',
     conditions: ['Blurred or weak vision', 'Red, itchy or watery eyes', 'Eye infections and allergies', 'Cataract assessment', 'Glaucoma screening', 'Diabetic eye check-ups'] },
-  { key: 'ENT Specialist', name: 'ENT (Ear, Nose & Throat)', icon: '👂', short: 'Ear, nose, throat and sinus problems in adults and children.',
+  { key: 'ENT Specialist', name: 'ENT (Ear, Nose & Throat)', icon: 'ear', short: 'Ear, nose, throat and sinus problems in adults and children.',
     conditions: ['Ear pain, discharge and wax', 'Hearing problems', 'Sinusitis and nasal blockage', 'Tonsils and sore throat', 'Allergic rhinitis', 'Voice and swallowing problems'] },
-  { key: 'Cardiologist', name: 'Cardiology', icon: '❤️', short: 'Heart health, chest pain, blood pressure and cholesterol.',
+  { key: 'Cardiologist', name: 'Cardiology', icon: 'heart', short: 'Heart health, chest pain, blood pressure and cholesterol.',
     conditions: ['Chest pain and palpitations', 'High blood pressure', 'High cholesterol', 'Heart failure follow-up', 'Shortness of breath', 'Heart check-ups before surgery'] },
-  { key: 'Gynecologist', name: 'Gynecology & Obstetrics', icon: '🤰', short: 'Pregnancy care and women’s health at every age.',
+  { key: 'Gynecologist', name: 'Gynecology & Obstetrics', icon: 'pregnant', short: 'Pregnancy care and women’s health at every age.',
     conditions: ['Antenatal (pregnancy) check-ups', 'Irregular or painful periods', 'PCOS', 'Infertility consultation', 'Family planning', 'Menopause problems'] },
-  { key: 'Dermatologist', name: 'Dermatology', icon: '🧴', short: 'Skin, hair and nail problems.',
+  { key: 'Dermatologist', name: 'Dermatology', icon: 'skin', short: 'Skin, hair and nail problems.',
     conditions: ['Acne and scars', 'Eczema and allergies', 'Fungal infections', 'Hair fall', 'Pigmentation and melasma', 'Psoriasis'] },
-  { key: 'Pediatrician', name: 'Pediatrics', icon: '👶', short: 'Newborn care, vaccination, child nutrition, growth and childhood illnesses.',
+  { key: 'Pediatrician', name: 'Pediatrics', icon: 'baby', short: 'Newborn care, vaccination, child nutrition, growth and childhood illnesses.',
     conditions: ['Newborn check-ups', 'Vaccination schedule', 'Fever, cough, diarrhoea and infections', 'Growth and development concerns', 'Child nutrition and feeding advice', 'Asthma and allergies in children'] },
-  { key: 'Dentist', name: 'Dental Care', icon: '🦷', short: 'Check-ups, fillings, extractions and gum care.',
+  { key: 'Dentist', name: 'Dental Care', icon: 'tooth', short: 'Check-ups, fillings, extractions and gum care.',
     conditions: ['Toothache and cavities', 'Fillings', 'Tooth extraction', 'Scaling and gum problems', 'Children’s dental care', 'Bad breath'] },
-  { key: 'Physiotherapist', name: 'Physiotherapy', icon: '🦵', short: 'Rehabilitation for pain, injuries, stroke and after surgery.',
+  { key: 'Physiotherapist', name: 'Physiotherapy', icon: 'activity', short: 'Rehabilitation for pain, injuries, stroke and after surgery.',
     conditions: ['Back and neck pain', 'Knee and joint pain', 'Sports injuries', 'Stroke rehabilitation', 'Frozen shoulder', 'Rehab after fractures and surgery'] },
-  { key: 'Nutritionist', name: 'Nutrition & Diet', icon: '🥗', short: 'Diet plans for weight, diabetes, pregnancy and children.',
+  { key: 'Nutritionist', name: 'Nutrition & Diet', icon: 'apple', short: 'Diet plans for weight, diabetes, pregnancy and children.',
     conditions: ['Weight loss and weight gain', 'Diet for diabetes and blood pressure', 'Pregnancy and breastfeeding nutrition', 'Child nutrition', 'High cholesterol diet'] },
-  { key: 'Psychologist', name: 'Psychology', icon: '🧠', short: 'Anxiety, depression, stress, family counselling and child behaviour.',
+  { key: 'Psychologist', name: 'Psychology', icon: 'brain', short: 'Anxiety, depression, stress, family counselling and child behaviour.',
     conditions: ['Anxiety and panic attacks', 'Depression and low mood', 'OCD', 'Stress and anger management', 'Family and marriage counselling', 'Child behaviour and learning problems'] },
-  { key: null, name: 'Laboratory', icon: '🔬', short: 'Blood and urine tests under a qualified pathologist.',
+  { key: null, name: 'Laboratory', icon: 'flask', short: 'Blood and urine tests under a qualified pathologist.',
     conditions: ['Blood tests (CBC, sugar, cholesterol, thyroid)', 'Urine and stool tests', 'Liver and kidney function tests', 'Tests ordered by our doctors'] },
-  { key: null, name: 'Pharmacy', icon: '💊', short: 'In-house pharmacy run by a qualified pharmacist (Pharm-D).',
+  { key: null, name: 'Pharmacy', icon: 'pill', short: 'In-house pharmacy run by a qualified pharmacist (Pharm-D).',
     conditions: ['Prescription medicines', 'Advice on how to take your medicines', 'Medicines prescribed by our doctors'] }
 ];
 
@@ -121,26 +122,97 @@ async function rpc(fn, args = {}) {
   return data;
 }
 
+// ---------- icons (simple line icons, 24x24) ----------
+const ICON_PATHS = {
+  eye: '<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+  ear: '<path d="M6 8.5a6 6 0 1 1 12 0c0 6-6 6-6 10a3.5 3.5 0 0 1-7 0"/><path d="M15 8.5a3 3 0 0 0-6 0c0 2 2 2.5 2 4.5"/>',
+  heart: '<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"/><path d="M3.5 12h4l2-3 3 6 2-3h6"/>',
+  pregnant: '<circle cx="12" cy="4" r="2"/><path d="M10 21v-5l-1.5-1.5a3 3 0 0 1 0-4.2L10 9h2.5a5 5 0 0 1 4.5 5 3.5 3.5 0 0 1-3.5 3.5H13V21"/>',
+  skin: '<path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/><circle cx="12" cy="12" r="3.5"/>',
+  baby: '<circle cx="12" cy="9" r="5"/><path d="M10 8.5h.01M14 8.5h.01M10.5 11a2 2 0 0 0 3 0"/><path d="M7 21a5 5 0 0 1 10 0"/>',
+  tooth: '<path d="M12 5.5C10 3.5 7 3 5.5 4.5 3.5 6.5 4.5 10 6 12.5c1 1.8.8 4 1.3 6.2.3 1.6 2.2 1.8 2.6.2L11 15h2l1.1 3.9c.4 1.6 2.3 1.4 2.6-.2.5-2.2.3-4.4 1.3-6.2 1.5-2.5 2.5-6-.5-8-1.5-1.5-4.5-1-6.5 1z"/>',
+  activity: '<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>',
+  apple: '<path d="M12 7c-1.5-1-5-1.5-6.5 1.5S5 16 7 19s3.5 2.5 5 1.5c1.5 1 3 1.5 5-1.5s2.5-7.5 1-10.5S13.5 6 12 7z"/><path d="M12 7c0-2 1-3.5 3-4"/>',
+  brain: '<path d="M9.5 3a3 3 0 0 0-3 3 3 3 0 0 0-2.5 4.5A3.5 3.5 0 0 0 5.5 17a3 3 0 0 0 4 3 2.5 2.5 0 0 0 2.5-2.5V5.5A2.5 2.5 0 0 0 9.5 3z"/><path d="M14.5 3a3 3 0 0 1 3 3 3 3 0 0 1 2.5 4.5 3.5 3.5 0 0 1-1.5 6.5 3 3 0 0 1-4 3 2.5 2.5 0 0 1-2.5-2.5"/>',
+  flask: '<path d="M9 3h6M10 3v6L4.5 18.5A1.7 1.7 0 0 0 6 21h12a1.7 1.7 0 0 0 1.5-2.5L14 9V3"/><path d="M7 15h10"/>',
+  pill: '<rect x="2.5" y="8.5" width="19" height="7" rx="3.5" transform="rotate(-45 12 12)"/><path d="M8.5 8.5l7 7"/>',
+  calendar: '<rect x="3" y="4.5" width="18" height="17" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4M8 14h2M14 14h2M8 18h2"/>',
+  search: '<circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>',
+  clipboard: '<rect x="5" y="4" width="14" height="18" rx="2"/><path d="M9 2.5h6v3H9zM8.5 12l2.5 2.5 4.5-4.5"/>',
+  chat: '<path d="M21 11.5a8.4 8.4 0 0 1-12.4 7.4L3 21l2.1-5.4A8.4 8.4 0 1 1 21 11.5z"/>',
+  phone: '<path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/>',
+  pin: '<path d="M12 22s7-6.2 7-12a7 7 0 0 0-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/>',
+  clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  wallet: '<rect x="2.5" y="5.5" width="19" height="14" rx="2.5"/><path d="M16 12.5h.01M2.5 9.5h19"/>',
+  shield: '<path d="M12 22s8-3.5 8-10V5l-8-3-8 3v7c0 6.5 8 10 8 10z"/><path d="M8.5 12l2.5 2.5 4.5-4.5"/>',
+  users: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><circle cx="17" cy="9" r="2.5"/><path d="M17 14.5a4.5 4.5 0 0 1 4.5 4.5"/>',
+  stethoscope: '<path d="M5 3v5a5 5 0 0 0 10 0V3"/><path d="M10 13v2a5 5 0 0 0 10 0v-2"/><circle cx="20" cy="11" r="2"/>',
+  star: '<path d="M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3l-5.6 2.9 1.1-6.2L3 9.6l6.2-.9z"/>',
+  check: '<path d="M4.5 12.5l5 5 10-11"/>',
+  arrow: '<path d="M5 12h14M13 6l6 6-6 6"/>',
+  image: '<rect x="3" y="4" width="18" height="16" rx="2.5"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 9"/>',
+  hospital: '<path d="M3 21h18M5 21V7l7-4 7 4v14"/><path d="M10 21v-4h4v4M12 8v4M10 10h4"/>',
+  info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>'
+};
+function icon(name, cls = '') {
+  return `<svg class="ic ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON_PATHS[name] || ICON_PATHS.info}</svg>`;
+}
+
+// ---------- avatars: real photo if uploaded, otherwise an illustrated portrait ----------
+const AVATAR_TINTS = [['#d9ecec', '#0b6e74'], ['#e3e9f7', '#3a5a9b'], ['#f6e6dc', '#a4572b'], ['#e4f1e4', '#2f7a3a'], ['#f3e2ec', '#9b3f6c'], ['#efe9dc', '#7a6230']];
+function hashStr(s) { let h = 0; for (const c of String(s)) h = (h * 31 + c.charCodeAt(0)) >>> 0; return h; }
+function avatarHTML(p, cls = '') {
+  const alt = esc(p.name || '');
+  if (p.photo) return `<img class="avatar-img ${cls}" src="${esc(p.photo)}" alt="Photo of ${alt}" loading="lazy">`;
+  const [bg, fg] = AVATAR_TINTS[hashStr(p.name) % AVATAR_TINTS.length];
+  const clinical = /^(Dr|Dt)\.?\s/i.test(p.name || '') || /doctor|specialist|ologist|dentist|therapist|pharmacist|nurse/i.test((p.role || p.specialty || ''));
+  const id = 'c' + hashStr(p.name) + cls.length;
+  return `<svg class="avatar-svg ${cls}" viewBox="0 0 80 80" role="img" aria-label="${alt}">
+    <defs><clipPath id="${id}"><circle cx="40" cy="40" r="40"/></clipPath></defs>
+    <circle cx="40" cy="40" r="40" fill="${bg}"/>
+    <g clip-path="url(#${id})">
+      <path d="M10 84c1-19 13-28 30-28s29 9 30 28z" fill="${clinical ? '#ffffff' : fg}" ${clinical ? 'stroke="#d5e3e5" stroke-width="1.2"' : 'opacity=".9"'}/>
+      ${clinical ? `<path d="M33.5 56.5L40 68l6.5-11.5" fill="${fg}" opacity=".9"/><path d="M28 59c-1 8 1 13 5 15M52 59c1 8-1 13-5 15" fill="none" stroke="#3b4a52" stroke-width="1.8" stroke-linecap="round"/><circle cx="47" cy="74.5" r="2.4" fill="#3b4a52"/>` : ''}
+      <path d="M35 46h10v10a5 5 0 0 1-10 0z" fill="#e2b48f"/>
+      <circle cx="40" cy="33" r="14" fill="#eac19c"/>
+      <path d="M26 33c-1-11 6-18 14-18s15 7 14 18c-3-6-8-9-14-9s-11 3-14 9z" fill="${fg}"/>
+    </g>
+  </svg>`;
+}
+
+function provisionalNote(small = false) {
+  return HOSPITAL.provisional_note ? `<div class="prov ${small ? 'small' : ''}">${icon('info')}<span>${esc(HOSPITAL.provisional_note)}</span></div>` : '';
+}
+
 // Doctor card used on Home and Doctors pages
 function doctorCard(d) {
   const today = isBookable(d) && worksToday(d);
-  return `<article class="card doc-card">
-    <div class="doc-top"><div class="avatar">${esc(initials(d.name))}</div>
+  return `<article class="card doc-card reveal">
+    <div class="doc-top"><a href="doctor.html?id=${d.id}" class="plain">${avatarHTML(d, 'avatar-lg')}</a>
       <div><h3><a href="doctor.html?id=${d.id}" class="plain">${esc(d.name)}</a></h3><span class="tag">${esc(d.specialty)}</span>
       ${d.title ? `<div class="muted small">${esc(d.title)}</div>` : ''}</div></div>
     ${d.review_count ? `<div class="rating-line">${stars(d.rating)} <b>${d.rating}</b> <span class="muted">(${d.review_count} review${d.review_count > 1 ? 's' : ''})</span></div>` : ''}
     ${d.qualifications ? `<p class="quals">${esc(d.qualifications)}</p>` : ''}
-    <div class="doc-meta">
-      ${d.experience ? `<span>Experience: <b>${d.experience} yrs</b></span>` : ''}
-      ${d.fee ? `<span>Fee: <b>Rs. ${d.fee.toLocaleString()}</b></span>` : ''}
+    <div class="doc-facts">
+      ${d.fee ? `<div>${icon('wallet')}<span>Fee</span><b>Rs. ${d.fee.toLocaleString()}</b></div>` : ''}
+      ${d.experience ? `<div>${icon('star')}<span>Experience</span><b>${d.experience} yrs</b></div>` : ''}
     </div>
-    <div class="timing">🕒 ${esc(scheduleText(d.schedule))}${today ? ' <span class="pill green">Available today</span>' : ''}</div>
+    <div class="timing">${icon('clock')}<span>${esc(scheduleText(d.schedule))}</span>${today ? '<span class="pill green">Available today</span>' : ''}</div>
     <div class="card-actions">
       <a class="btn outline" href="doctor.html?id=${d.id}">View Profile</a>
       ${isBookable(d) ? `<a class="btn" href="book.html?doctor=${d.id}">Book</a>` : `<a class="btn" href="${tel(HOSPITAL.phone1)}">Call to Book</a>`}
     </div>
   </article>`;
 }
+
+// ---------- fade-in on scroll ----------
+function initReveal() {
+  const els = document.querySelectorAll('.reveal:not(.shown)');
+  if (!('IntersectionObserver' in window) || matchMedia('(prefers-reduced-motion: reduce)').matches) { els.forEach(e => e.classList.add('shown')); return; }
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('shown'); io.unobserve(e.target); } }), { rootMargin: '0px 0px -40px 0px' });
+  els.forEach(e => io.observe(e));
+}
+new MutationObserver(() => initReveal()).observe(document.documentElement, { childList: true, subtree: true });
 
 // ---------- site settings ----------
 let siteReady;
@@ -180,7 +252,7 @@ function renderChrome() {
       <span>📞 <a href="${tel(HOSPITAL.phone1)}">${esc(HOSPITAL.phone1)}</a>${HOSPITAL.phone2 ? `<span class="hide-sm"> · <a href="${tel(HOSPITAL.phone2)}">${esc(HOSPITAL.phone2)}</a></span>` : ''}</span>
     </div></div>
     <header class="site"><div class="container">
-      <a class="brand" href="index.html"><img src="favicon.svg" alt="" class="logo-img"><span>${HOSPITAL.name}<small>Suraj Miani Road, Multan</small></span></a>
+      <a class="brand" href="index.html"><span class="logo-mark">${icon('hospital')}</span><span>${HOSPITAL.name}<small>Suraj Miani Road, Multan</small></span></a>
       <div class="head-right">
         <button type="button" class="lang-btn" data-no-tr onclick="setLang(typeof LANG !== 'undefined' && LANG === 'ur' ? 'en' : 'ur')" aria-label="${typeof LANG !== 'undefined' && LANG === 'ur' ? 'Switch to English' : 'اردو میں دیکھیں'}">${typeof LANG !== 'undefined' && LANG === 'ur' ? 'English' : 'اردو'}</button>
         <button class="menu-btn" aria-label="Open menu" aria-expanded="false">☰</button>
@@ -197,7 +269,7 @@ function renderChrome() {
   if (footer) footer.innerHTML = `
     <footer class="site"><div class="container">
       <div class="cols">
-        <div><h4>${HOSPITAL.name}</h4><p>Specialists, allied health, laboratory and pharmacy under one roof for families in Multan.</p>
+        <div><h4 class="foot-brand"><span class="logo-mark sm">${icon('hospital')}</span>${HOSPITAL.name}</h4><p>Specialists, allied health, laboratory and pharmacy under one roof for families in Multan.</p>
           <p>${HOSPITAL.facebook ? `<a href="${esc(HOSPITAL.facebook)}" target="_blank" rel="noopener">Facebook</a> · ` : ''}<a href="${waLink()}" target="_blank" rel="noopener">WhatsApp</a></p></div>
         <div><h4>Hospital</h4><ul>
           <li><a href="about.html">About Us</a></li><li><a href="team.html">Our Team</a></li><li><a href="doctors.html">Our Doctors</a></li>
@@ -226,3 +298,9 @@ document.addEventListener('DOMContentLoaded', () => {
   renderChrome();                         // render immediately with cached/default info
   siteReady.then(renderChrome);           // re-render once latest settings arrive
 });
+
+// Replace <span class="ic-slot" data-icon="name"></span> placeholders with icons
+function fillIcons(root = document) {
+  root.querySelectorAll('.ic-slot[data-icon]').forEach(el => { el.outerHTML = icon(el.dataset.icon); });
+}
+document.addEventListener('DOMContentLoaded', () => fillIcons());

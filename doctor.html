@@ -24,6 +24,7 @@
 </main>
 <div id="site-footer"></div>
 <script src="common.js"></script>
+<script src="charts.js"></script>
 <script>
 const id = Number(new URLSearchParams(location.search).get('id'));
 const wrap = document.getElementById('wrap');
@@ -36,12 +37,18 @@ rpc('amc_doctor', { p_id: id }).then(d => {
   <div class="profile">
     <div>
       <div class="card">
-        <div class="profile-head">
-          <div class="avatar">${esc(initials(d.name))}</div>
+        <div class="profile-hero">
+          ${avatarHTML(d, 'avatar-xl')}
           <div>
-            <h1 style="margin:0">${esc(d.name)}</h1>
+            <h1>${esc(d.name)}</h1>
             <span class="tag">${esc(d.specialty)}</span> ${d.title ? `<span class="muted">· ${esc(d.title)}</span>` : ''}
             ${d.review_count ? `<div class="rating-line" style="margin-top:6px">${stars(d.rating)} <b>${d.rating}</b> <span class="muted">(${d.review_count} reviews)</span></div>` : ''}
+            <div class="chips-row">
+              ${d.fee ? `<span class="fact">${icon('wallet')} Rs. ${d.fee.toLocaleString()}</span>` : ''}
+              ${d.experience ? `<span class="fact">${icon('star')} ${d.experience} years</span>` : ''}
+              ${isBookable(d) ? `<span class="fact">${icon('clock')} ${Math.round(weeklyHours(d))} hrs / week</span>` : ''}
+              ${d.slot_minutes ? `<span class="fact">${icon('calendar')} ${d.slot_minutes}-min visits</span>` : ''}
+            </div>
           </div>
         </div>
         ${d.qualifications ? `<h3 style="margin-top:22px">Qualifications</h3><p>${esc(d.qualifications)}</p>` : ''}
@@ -51,6 +58,7 @@ rpc('amc_doctor', { p_id: id }).then(d => {
           ${d.fee ? `<span>Consultation fee: <b>Rs. ${d.fee.toLocaleString()}</b></span>` : ''}
         </div>
       </div>
+      ${isBookable(d) && new Set(Object.values(d.schedule).map(x => x.join())).size > 1 ? `<div class="card chart-card" style="margin-top:22px"><h3>Hours available each day</h3><p class="sub">From the current clinic timetable</p><div id="day-chart"></div></div>` : ''}
       <div class="card" style="margin-top:22px">
         <h3>Patient reviews</h3>
         ${d.reviews.length ? d.reviews.map(r => `<div class="review">${stars(r.rating)} <b>${esc(r.name)}</b> <span class="muted small">· ${fmtDate(r.date)}</span>
@@ -65,7 +73,8 @@ rpc('amc_doctor', { p_id: id }).then(d => {
         <table class="timetable">${DAY_ORDER.map(k => `<tr class="${k === todayKey ? 'today' : ''}"><td>${DAY_FULL[k]}</td>
           <td style="text-align:right">${d.schedule[k] ? fmtTime(d.schedule[k][0]) + ' – ' + fmtTime(d.schedule[k][1]) : '<span class="muted">Off</span>'}</td></tr>`).join('')}</table>
         ${d.leaves.length ? `<div class="alert info" style="margin:14px 0 0">On leave: ${d.leaves.slice(0, 6).map(x => fmtDate(x)).join(', ')}${d.leaves.length > 6 ? '…' : ''}</div>` : ''}
-        <div style="display:grid;gap:10px;margin-top:16px">
+        ${isBookable(d) ? '<div style="margin-top:14px">' + provisionalNote(true) + '</div>' : ''}
+        <div style="display:grid;gap:10px;margin-top:6px">
           ${bookable ? `<a class="btn" href="book.html?doctor=${d.id}">Book Appointment</a>` : ''}
           <a class="btn outline" href="${tel(HOSPITAL.phone1)}">Call ${esc(HOSPITAL.phone1)}</a>
           <button class="btn outline" id="share">Share profile</button>
@@ -73,6 +82,10 @@ rpc('amc_doctor', { p_id: id }).then(d => {
       </div>
     </aside>
   </div>`;
+  const dc = document.getElementById('day-chart');
+  if (dc) barChart(dc, DAY_ORDER.filter(k => d.schedule[k]).map(k => ({ label: DAY_FULL[k], value: weeklyHours({ schedule: { x: d.schedule[k] } }),
+    tip: `${DAY_FULL[k]}: ${fmtTime(d.schedule[k][0])} – ${fmtTime(d.schedule[k][1])}` })), { unit: 'hours', caption: 'Hours available each day' });
+  loadSite().then(() => { const p = document.querySelector('.sticky .prov'); if (p) p.outerHTML = provisionalNote(true); });
   document.getElementById('share').onclick = async () => {
     const data = { title: d.name, text: `${d.name} – ${d.specialty} at Ali Medical Complex, Multan`, url: location.href };
     try { if (navigator.share) await navigator.share(data); else { await navigator.clipboard.writeText(location.href); alert('Link copied.'); } } catch {}

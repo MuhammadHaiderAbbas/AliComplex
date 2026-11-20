@@ -35,6 +35,7 @@
 
     <div id="step2" class="hidden">
       <div class="summary" id="doc-summary"></div>
+      <div id="prov-book"></div>
       <div class="field" style="max-width:280px">
         <label for="date">Select date</label>
         <input type="date" id="date">
@@ -73,7 +74,7 @@
       <p class="muted">Please save your booking reference:</p>
       <div class="ref" id="ref"></div>
       <div class="summary" id="done-summary" style="text-align:left;max-width:440px;margin:20px auto"></div>
-      <p class="muted">Please arrive 10 minutes early and bring previous reports. Our staff may call you to confirm.<br>
+      <p class="muted">Please arrive 10 minutes early and bring previous reports. Our staff will call you to confirm the time.<br>
         Questions? Call <a data-site="phone1" href="#"></a>.</p>
       <div class="no-print" style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
         <button class="btn outline" id="ics">📅 Add to calendar</button>
@@ -114,6 +115,7 @@ function pickDoctor(id) {
   slot = null; $('to3').disabled = true;
   $('doc-summary').innerHTML = summaryHTML();
   $('days-hint').textContent = 'Available: ' + scheduleText(doc.schedule);
+  loadSite().then(() => $('prov-book').innerHTML = provisionalNote(true));
   const keys = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
   const d = new Date(todayPK() + 'T00:00:00');
   for (let i = 0; i < 14 && !doc.schedule[keys[d.getDay()]]; i++) d.setDate(d.getDate() + 1);
@@ -201,7 +203,7 @@ rpc('amc_doctors').then(list => {
   $('docs').innerHTML = list.map(d => {
     const ok = isBookable(d);
     return `<button type="button" class="doc-option ${ok ? '' : 'disabled'}" data-id="${d.id}" ${ok ? '' : 'disabled'}>
-      <b>${esc(d.name)}</b><span>${esc(d.specialty)}${d.fee ? ' · Rs. ' + d.fee.toLocaleString() : ''}${d.review_count ? ' · ★ ' + d.rating : ''}</span><br>
+      <span class="opt-av">${avatarHTML(d, 'avatar-sm')}</span><b>${esc(d.name)}</b><span>${esc(d.specialty)}${d.fee ? ' · Rs. ' + d.fee.toLocaleString() : ''}${d.review_count ? ' · ★ ' + d.rating : ''}</span><br>
       <span>${ok ? esc(scheduleText(d.schedule)) : 'Booking by phone only: ' + esc(HOSPITAL.phone1)}</span></button>`;
   }).join('');
   $('docs').addEventListener('click', e => { const b = e.target.closest('.doc-option'); if (b && !b.disabled) pickDoctor(Number(b.dataset.id)); });

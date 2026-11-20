@@ -41,6 +41,12 @@ Runs completely free: the pages are hosted on GitHub Pages and bookings are stor
 - **Payroll → Tax & PF settings:** yearly tax slabs (pre-filled with 2025-26 salaried rates; **check against the current Finance Act each July**), default PF %, change payroll password.
 - **Letters:** general letters and employment reference letters on the letterhead, with reference numbers (AMC/YYYY/NNNN) and verification codes; reference letters fill in from employee records and the org chart, and can attach the org chart. Issued letters are kept in a register and can be voided.
 
+## Photos, gallery and design
+- **Profile photos:** Staff panel → Doctors (Edit) or Org Chart (Edit) → choose a photo. It is cropped square and resized automatically. Until a photo is added, an illustrated avatar is shown.
+- **Gallery:** Staff panel → Settings → Website photo gallery (up to 24 real photos of the hospital). Shown on the Home and About pages, with a full-screen viewer.
+- **Charts:** weekly timetable (Home), team by department and weekly OPD hours by service (About), hours per day (doctor profiles), all built from live data.
+- **Provisional timings:** the starter timetable is marked provisional; the notice text is in Staff panel → Settings. Clear it once real timings are entered.
+
 ## Urdu version
 Every public page has an **English / اردو** button (top right). Urdu switches the layout to right-to-left with an Urdu (Nastaliq) font and remembers the choice on that device. Translations live in `i18n.js`: to change a wording, edit the Urdu text next to its English sentence. Doctor names, qualifications and bios entered in the staff panel are shown as typed. The staff panel stays in English.
 

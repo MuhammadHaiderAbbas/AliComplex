@@ -26,6 +26,7 @@
       <div class="chips" id="chips"></div>
       <label class="check"><input type="checkbox" id="today"> Available today</label>
     </div>
+    <div id="prov"></div>
     <div class="grid cols-3" id="list"><p class="muted">Loading doctors…</p></div>
   </div>
 </section>
@@ -46,6 +47,7 @@ function draw() {
 }
 $('chips').onclick = e => { const b = e.target.closest('.chip'); if (!b) return; spec = b.dataset.s; draw(); };
 $('q').oninput = draw; $('today').onchange = draw;
+loadSite().then(() => $('prov').innerHTML = provisionalNote());
 rpc('amc_doctors').then(d => { all = d; draw(); }).catch(e => $('list').innerHTML = `<p class="muted">${esc(e.message)}</p>`);
 </script>
 </body>

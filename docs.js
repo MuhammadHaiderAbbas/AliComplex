@@ -158,11 +158,14 @@ function orgTree(list) {
   const kids = p => (by[p.id] || []).sort((a, b) => a.sort_order - b.sort_order || a.id - b.id);
   return { roots, kids };
 }
+let OC_AVATARS = false;
 function personCard(p, cls = '') {
   if (p.grp === 'group') return `<div class="oc-card oc-group ${cls}"><b>${esc(p.name)}</b></div>`;
-  return `<div class="oc-card oc-${esc(p.grp)} ${cls}"><b>${esc(p.name)}</b>${p.role ? `<span>${esc(p.role)}</span>` : ''}${p.qualification ? `<small>${esc(p.qualification)}</small>` : ''}</div>`;
+  const av = OC_AVATARS && typeof avatarHTML === 'function';
+  return `<div class="oc-card oc-${esc(p.grp)} ${cls} ${av ? 'has-av' : ''}">${av ? avatarHTML(p, 'oc-av') : ''}<b>${esc(p.name)}</b>${p.role ? `<span>${esc(p.role)}</span>` : ''}${p.qualification ? `<small>${esc(p.qualification)}</small>` : ''}</div>`;
 }
-function orgChartHTML(list) {
+function orgChartHTML(list, opts = {}) {
+  OC_AVATARS = !!opts.avatars;
   if (!list.length) return '<p class="muted">No team members to show yet.</p>';
   const { roots, kids } = orgTree(list);
   const nested = p => { const k = kids(p); return k.length ? `<ul class="oc-list">${k.map(c => `<li>${personCard(c, 'sm')}${nested(c)}</li>`).join('')}</ul>` : ''; };

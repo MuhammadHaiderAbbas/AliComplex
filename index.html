@@ -27,36 +27,41 @@
 <section class="hero">
   <div class="container">
     <div>
-      <span class="tag">Suraj Miani Road, Multan</span>
-      <h1 style="margin-top:14px">Trusted specialist care for you and your family</h1>
+      <span class="eyebrow">Suraj Miani Road, Multan</span>
+      <h1 style="margin-top:14px">Expert care for your family, <em>all under one roof</em></h1>
       <p class="lead">Specialists in eye care, ENT, heart, women’s health, skin, child health and dental care, with physiotherapy, nutrition, laboratory and pharmacy under one roof.</p>
       <div class="actions">
-        <a class="btn" href="book.html">Book an Appointment</a>
+        <a class="btn" href="book.html"><span class="ic-slot" data-icon="calendar"></span>Book an Appointment</a>
         <a class="btn outline" data-site="phone1" href="tel:0612039965">061-2039965</a>
       </div>
+      <div class="trust">
+        <span><span class="ic-slot" data-icon="shield"></span>Qualified specialists</span>
+        <span><span class="ic-slot" data-icon="clock"></span>Book online 24/7</span>
+        <span><span class="ic-slot" data-icon="flask"></span>Lab &amp; pharmacy on site</span>
+      </div>
     </div>
-    <div class="hero-card">
-      <h3>Visit Us</h3>
-      <div class="info-row"><span class="ico">📍</span><div><b>Address</b>Chungi No. 1, Suraj Miani Road, Multan</div></div>
-      <div class="info-row"><span class="ico">📞</span><div><b>Phone</b><a data-site="phone1" href="tel:0612039965">061-2039965</a> · <a data-site="phone2" href="tel:03000270600">0300-0270600</a></div></div>
-      <div class="info-row"><span class="ico">🕒</span><div><b>OPD Days</b><span data-site="opd_note">Monday – Saturday (timings vary by doctor)</span></div></div>
-      <div class="info-row"><span class="ico">💳</span><div><b>Consultation Fee</b><span id="fee-range">Please call to ask</span></div></div>
+    <div class="hero-art">
+      <div id="hero-scene"></div>
+      <div class="float-chip c1"><span class="ic-wrap"><span class="ic-slot" data-icon="stethoscope"></span></span><span><b id="chip-docs">10</b>Specialists</span></div>
+      <div class="float-chip c2"><span class="ic-wrap"><span class="ic-slot" data-icon="calendar"></span></span><span><b id="chip-today">–</b>Doctors in today</span></div>
+      <div class="float-chip c3"><span class="ic-wrap"><span class="ic-slot" data-icon="users"></span></span><span><b id="chip-team">33</b>Team members</span></div>
     </div>
   </div>
 </section>
 
 <div class="container">
   <div class="quick">
-    <a href="book.html"><span class="ico">📅</span><span><b>Book Appointment</b><span class="muted">Pick a doctor &amp; time</span></span></a>
-    <a href="doctors.html"><span class="ico">👨‍⚕️</span><span><b>Find a Doctor</b><span class="muted">Search by specialty</span></span></a>
-    <a href="my-booking.html"><span class="ico">🔎</span><span><b>Check Booking</b><span class="muted">Status, cancel or review</span></span></a>
-    <a data-site="whatsapp" href="#" target="_blank" rel="noopener"><span class="ico">💬</span><span><b>WhatsApp Us</b><span class="muted">Quick questions</span></span></a>
+    <a href="book.html" class="reveal"><span class="ico"><span class="ic-slot" data-icon="calendar"></span></span><span><b>Book Appointment</b><span class="muted">Pick a doctor &amp; time</span></span></a>
+    <a href="doctors.html" class="reveal"><span class="ico"><span class="ic-slot" data-icon="search"></span></span><span><b>Find a Doctor</b><span class="muted">Search by specialty</span></span></a>
+    <a href="my-booking.html" class="reveal"><span class="ico"><span class="ic-slot" data-icon="clipboard"></span></span><span><b>Check Booking</b><span class="muted">Status, cancel or review</span></span></a>
+    <a data-site="whatsapp" href="#" target="_blank" rel="noopener" class="reveal"><span class="ico"><span class="ic-slot" data-icon="chat"></span></span><span><b>WhatsApp Us</b><span class="muted">Quick questions</span></span></a>
   </div>
 </div>
 
 <section id="services">
   <div class="container">
     <div class="section-head">
+      <span class="eyebrow">Our services</span>
       <h2>Our Specialties</h2>
       <p class="muted">Specialist care, therapy, tests and medicines under one roof.</p>
     </div>
@@ -65,20 +70,41 @@
   </div>
 </section>
 
-<section id="doctors" class="soft">
+<section class="soft">
+  <div class="container">
+    <div class="section-head"><span class="eyebrow">Simple &amp; quick</span><h2>How online booking works</h2><p class="muted">Three steps, about a minute.</p></div>
+    <div class="how">
+      <div class="step-card reveal"><div class="ico-badge"><span class="ic-slot" data-icon="search"></span></div><h3>Choose your doctor</h3><p class="muted">Browse specialists, timings and fees.</p></div>
+      <div class="step-card reveal"><div class="ico-badge"><span class="ic-slot" data-icon="calendar"></span></div><h3>Pick a free time</h3><p class="muted">Only open slots are shown, so no double booking.</p></div>
+      <div class="step-card reveal"><div class="ico-badge"><span class="ic-slot" data-icon="check"></span></div><h3>Get your reference</h3><p class="muted">Save it, add it to your calendar, and pay at the clinic.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="doctors">
   <div class="container">
     <div class="section-head">
+      <span class="eyebrow">Meet the specialists</span>
       <h2>Our Doctors</h2>
       <p class="muted">Qualified, experienced specialists. Choose a doctor to see available times.</p>
     </div>
+    <div id="prov-home"></div>
     <div class="grid cols-3" id="doctor-list"><p class="muted center">Loading doctors…</p></div>
     <p class="center" style="margin-top:26px"><a class="btn outline" href="doctors.html">See all doctors</a></p>
   </div>
 </section>
 
+<section class="soft">
+  <div class="container">
+    <div class="section-head"><span class="eyebrow">Weekly timetable</span><h2>Who is in, and when</h2><p class="muted">Today is highlighted. Tap a time to book.</p></div>
+    <div id="timetable" class="reveal"><p class="muted center">Loading…</p></div>
+  </div>
+</section>
+
 <section>
   <div class="container about-grid">
-    <div>
+    <div class="reveal">
+      <span class="eyebrow">Why us</span>
       <h2>Why patients choose us</h2>
       <ul class="checklist">
         <li>Specialists in 10 fields, led by our Head of Clinical Services</li>
@@ -90,17 +116,24 @@
       <p style="margin-top:20px"><a class="btn" href="about.html">About the hospital</a></p>
     </div>
     <div class="stats">
-      <div class="stat"><div class="n" id="stat-spec">12</div><div class="muted">Services</div></div>
-      <div class="stat"><div class="n" id="stat-docs">5</div><div class="muted">Doctors</div></div>
-      <div class="stat"><div class="n">6</div><div class="muted">Days a week</div></div>
-      <div class="stat"><div class="n">24/7</div><div class="muted">Online booking</div></div>
+      <div class="stat reveal"><div class="ico-badge"><span class="ic-slot" data-icon="stethoscope"></span></div><div class="n" id="stat-docs">10</div><div class="muted">Doctors &amp; therapists</div></div>
+      <div class="stat reveal"><div class="ico-badge"><span class="ic-slot" data-icon="hospital"></span></div><div class="n" id="stat-spec">12</div><div class="muted">Services</div></div>
+      <div class="stat reveal"><div class="ico-badge"><span class="ic-slot" data-icon="clock"></span></div><div class="n" id="stat-hours">–</div><div class="muted">OPD hours a week</div></div>
+      <div class="stat reveal"><div class="ico-badge"><span class="ic-slot" data-icon="users"></span></div><div class="n" id="stat-team">33</div><div class="muted">Team members</div></div>
     </div>
   </div>
 </section>
 
-<section class="soft hidden" id="testimonials">
+<section class="soft hidden" id="gallery-sec">
   <div class="container">
-    <div class="section-head"><h2>What our patients say</h2><p class="muted">Reviews from patients after their visit.</p></div>
+    <div class="section-head"><span class="eyebrow">Inside the hospital</span><h2>Our facility</h2></div>
+    <div class="gallery" id="gallery"></div>
+  </div>
+</section>
+
+<section class="hidden" id="testimonials">
+  <div class="container">
+    <div class="section-head"><span class="eyebrow">Patient reviews</span><h2>What our patients say</h2><p class="muted">Reviews from patients after their visit.</p></div>
     <div class="grid cols-3" id="testi-list"></div>
   </div>
 </section>
@@ -113,24 +146,35 @@
 <div id="site-footer"></div>
 
 <script src="common.js"></script>
+<script src="charts.js"></script>
+<script src="art.js"></script>
+<script src="gallery.js"></script>
 <script>
-  document.getElementById('spec-grid').innerHTML = SPECIALTIES.map(s =>
-    `<a class="card spec-card plain" href="services.html#${s.name.toLowerCase().replace(/[^a-z]+/g, '-')}"><div class="ico">${s.icon}</div><h3>${s.name}</h3><p>${s.short}</p></a>`).slice(0, 8).join('');
+  document.getElementById('hero-scene').innerHTML = ART.hospital;
+  fillIcons();
+  document.getElementById('spec-grid').innerHTML = SPECIALTIES.slice(0, 8).map(s =>
+    `<a class="card spec-card plain reveal" href="services.html#${s.name.toLowerCase().replace(/[^a-z]+/g, '-')}"><div class="ico">${icon(s.icon)}</div><h3>${s.name}</h3><p>${s.short}</p><span class="more">Learn more ${icon('arrow')}</span></a>`).join('');
   document.getElementById('stat-spec').textContent = SPECIALTIES.length;
 
   rpc('amc_doctors').then(docs => {
-    document.getElementById('stat-docs').textContent = docs.length;
+    const n = docs.length;
+    ['stat-docs', 'chip-docs'].forEach(id => document.getElementById(id).textContent = n);
+    document.getElementById('chip-today').textContent = docs.filter(d => isBookable(d) && worksToday(d)).length;
+    document.getElementById('stat-hours').textContent = Math.round(docs.reduce((t, d) => t + weeklyHours(d), 0));
     const fees = docs.map(d => d.fee).filter(Boolean);
-    if (fees.length) document.getElementById('fee-range').textContent = `Rs. ${Math.min(...fees).toLocaleString()} – ${Math.max(...fees).toLocaleString()}`;
     document.getElementById('doctor-list').innerHTML = docs.slice(0, 6).map(doctorCard).join('');
+    timetableGrid(document.getElementById('timetable'), docs);
+    loadSite().then(() => document.getElementById('prov-home').innerHTML = provisionalNote());
   }).catch(() => {
     document.getElementById('doctor-list').innerHTML = `<p class="muted center">Could not load doctors. Please call ${esc(HOSPITAL.phone1)}.</p>`;
   });
+  rpc('amc_team').then(t => { const n = t.filter(p => p.grp !== 'group').length; ['stat-team', 'chip-team'].forEach(id => document.getElementById(id).textContent = n); }).catch(() => {});
+  showGallery('gallery', 'gallery-sec', 8);
 
   rpc('amc_recent_reviews', { p_limit: 6 }).then(list => {
     if (!list.length) return;
     document.getElementById('testimonials').classList.remove('hidden');
-    document.getElementById('testi-list').innerHTML = list.map(r => `<div class="card testi">
+    document.getElementById('testi-list').innerHTML = list.map(r => `<div class="card testi reveal">
       ${stars(r.rating)}<p>“${esc(r.comment)}”</p>
       <div class="muted small">— ${esc(r.name)}, visited <a href="doctor.html?id=${r.doctor_id}">${esc(r.doctor)}</a></div></div>`).join('');
   }).catch(() => {});
