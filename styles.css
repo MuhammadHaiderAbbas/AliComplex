@@ -280,3 +280,115 @@ html[dir=rtl] .stars { direction: ltr; display: inline-block; }
 header.site nav.main { order: 2; margin-left: auto; margin-right: 16px; }
 html[dir=rtl] header.site nav.main { margin-left: 16px; margin-right: auto; }
 @media (max-width: 900px) { header.site nav.main { margin: 0; } }
+
+/* ===== Documents (letterhead, payslip, letters) ===== */
+.doc-scroll { overflow-x: auto; padding: 10px 0; }
+.lh-page { position: relative; width: 210mm; min-height: 297mm; margin: 0 auto; background: #fff; color: #222; box-shadow: 0 4px 24px rgba(0,0,0,.12);
+  padding: 16mm 16mm 22mm 24mm; font-family: "Segoe UI", system-ui, Arial, sans-serif; font-size: 10.5pt; line-height: 1.5; overflow: hidden; direction: ltr; text-align: left; }
+.lh-bar { position: absolute; left: 8mm; top: 0; bottom: 0; width: 4mm; background: var(--primary); }
+.lh-watermark { position: absolute; left: 50%; top: 52%; width: 110mm; transform: translate(-50%, -50%); color: var(--primary); opacity: .06; pointer-events: none; }
+.lh-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 10mm; margin-bottom: 10mm; position: relative; }
+.lh-brand { display: flex; flex-direction: column; align-items: flex-start; gap: 3mm; }
+.lh-logo { width: 26mm; height: 26mm; color: var(--primary); }
+.lh-name { font-size: 15pt; font-weight: 800; letter-spacing: .3px; color: #1d2a33; text-transform: uppercase; }
+.lh-name small { display: block; font-size: 8.5pt; font-weight: 500; letter-spacing: 1px; color: #5d6b75; }
+.lh-contact { list-style: disc; margin: 2mm 0 0; padding: 0 0 0 9mm; border-left: 1.2mm solid var(--primary); font-size: 9.5pt; color: #333; max-width: 80mm; }
+.lh-contact li { padding: .4mm 0; }
+.lh-body { position: relative; }
+.lh-body p { margin: 0 0 3.2mm; text-align: justify; }
+.lh-body h4 { color: var(--primary-dark); margin: 5mm 0 2mm; font-size: 11pt; }
+.lh-foot { position: absolute; left: 24mm; right: 16mm; bottom: 9mm; border-top: .3mm solid #cfd8dc; padding-top: 2mm; font-size: 8pt; color: #5d6b75; text-align: center; }
+.doc-title { text-align: center; font-size: 15pt; font-weight: 800; letter-spacing: 3px; color: var(--primary-dark); margin: 0 0 5mm; }
+.void { color: #c0392b; border: .6mm solid #c0392b; padding: 0 3mm; font-size: 11pt; letter-spacing: 2px; margin-left: 4mm; vertical-align: middle; }
+.ps-info, .ps-table, .ps-summary, .kv { width: 100%; border-collapse: collapse; margin-bottom: 5mm; font-size: 9.8pt; position: relative; background: rgba(255,255,255,.6); }
+.ps-info th, .ps-info td, .ps-table th, .ps-table td, .ps-summary th, .ps-summary td, .kv th, .kv td { border: .3mm solid #b8c7cc; padding: 1.6mm 2.4mm; text-align: left; vertical-align: top; }
+.ps-info th, .kv th { background: #eef6f6; width: 22%; font-weight: 600; }
+.kv th { width: 34%; }
+.ps-table thead th { background: var(--primary); color: #fff; }
+.ps-table thead tr:first-child th { background: var(--primary-dark); text-align: center; }
+.ps-table tfoot th { background: #eef6f6; }
+.ps-table td, .ps-table th { width: 25%; }
+.ps-summary { width: 60%; margin-left: auto; }
+.ps-summary tr.net th, .ps-summary tr.net td { background: var(--primary); color: #fff; font-size: 11pt; font-weight: 800; }
+.num { text-align: right !important; font-variant-numeric: tabular-nums; }
+.words { background: #f5f8f9; padding: 2mm 3mm; border-left: 1mm solid var(--primary); }
+.sign-row { display: flex; justify-content: space-between; gap: 20mm; margin-top: 14mm; font-size: 9.5pt; }
+.sign-row > div { flex: 1; text-align: center; }
+.sign-line { border-top: .3mm solid #333; margin: 0 auto 1.5mm; width: 60mm; }
+.sig .sign-line { margin: 0 0 1.5mm; }
+.fine { font-size: 8.3pt; color: #5d6b75; margin-top: 6mm; text-align: center !important; }
+.ltr-top { display: flex; justify-content: space-between; gap: 10mm; margin-bottom: 6mm; }
+.ltr-date { text-align: right; color: var(--primary-dark); white-space: nowrap; }
+.subj { font-weight: 700; color: var(--primary-dark); }
+.sig { margin-top: 8mm; }
+.duties { margin: 0 0 3mm 4mm; padding-left: 4mm; }
+.duties li { margin-bottom: 1.2mm; text-align: justify; }
+.lh-page.chart-page .oc { transform-origin: top left; }
+
+/* ===== Organisation chart ===== */
+.oc { display: flex; flex-direction: column; align-items: center; }
+.oc-chain { display: flex; flex-direction: column; align-items: center; }
+.oc-arrow { width: 3px; height: 26px; background: var(--primary); position: relative; margin: 0 auto 6px; }
+.oc-arrow::after { content: ""; position: absolute; bottom: -7px; left: -5px; border: 6.5px solid transparent; border-top: 8px solid var(--primary); border-bottom: 0; }
+.oc-card { background: #fff; border: 1.5px solid #bfdcdd; border-left: 5px solid var(--primary); border-radius: 8px; padding: 8px 12px; box-shadow: var(--shadow); text-align: left; }
+.oc-card b { display: block; color: var(--text); }
+.oc-card span { display: block; font-size: .86rem; color: var(--primary-dark); font-weight: 600; }
+.oc-card small { display: block; font-size: .78rem; color: var(--muted); }
+.oc-card.lg { min-width: 280px; text-align: center; border-left-width: 1.5px; border-top: 5px solid var(--primary); padding: 12px 18px; }
+.oc-card.lg b { font-size: 1.15rem; }
+.oc-card.head { background: var(--primary); border-color: var(--primary); }
+.oc-card.head b, .oc-card.head span, .oc-card.head small { color: #fff; }
+.oc-group.head { background: var(--primary-dark); }
+.oc-card.sm { padding: 6px 10px; box-shadow: none; }
+.oc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 16px; width: 100%; border-top: 3px solid var(--primary); padding-top: 18px; margin-top: 4px; }
+.oc-dept { background: var(--bg-soft); border-radius: 10px; padding: 10px; align-self: start; }
+.oc-list { list-style: none; margin: 8px 0 0 10px; padding: 0 0 0 12px; border-left: 2px solid #bfdcdd; }
+.oc-list li { position: relative; margin: 6px 0; }
+.oc-list li::before { content: ""; position: absolute; left: -12px; top: 18px; width: 12px; border-top: 2px solid #bfdcdd; }
+.oc-leadership { border-left-color: #08555a; } .oc-clinical { border-left-color: #0b6e74; } .oc-allied { border-left-color: #2f8f6f; }
+.oc-nursing { border-left-color: #c2185b; } .oc-admin { border-left-color: #e8a33d; } .oc-support { border-left-color: #7b8a93; }
+.oc-legend { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; font-size: .85rem; margin-bottom: 20px; }
+.oc-legend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: middle; }
+html[dir=rtl] .oc-card { text-align: right; border-left-width: 1.5px; border-right: 5px solid var(--primary); }
+html[dir=rtl] .oc-card.lg { border-right-width: 1.5px; text-align: center; }
+html[dir=rtl] .oc-list { margin: 8px 10px 0 0; padding: 0 12px 0 0; border-left: 0; border-right: 2px solid #bfdcdd; }
+html[dir=rtl] .oc-list li::before { left: auto; right: -12px; }
+.chart-page .oc-grid { grid-template-columns: repeat(3, 1fr); gap: 3mm; padding-top: 4mm; }
+.chart-page .oc-card { box-shadow: none; padding: 1.2mm 2.4mm; font-size: 8pt; }
+.chart-page .oc-card.lg { min-width: 70mm; padding: 2mm 4mm; } .chart-page .oc-card.lg b { font-size: 10.5pt; }
+.chart-page .oc-card span { font-size: 7.6pt; } .chart-page .oc-card small { font-size: 7pt; }
+.chart-page .oc-dept { padding: 2mm; } .chart-page .oc-list { margin-top: 1.5mm; } .chart-page .oc-list li { margin: 1.2mm 0; }
+.chart-page .oc-list li::before { top: 3.2mm; } .chart-page .oc-arrow { height: 5mm; }
+
+/* printing a document from the staff panel or letterhead page */
+@media print {
+  @page { size: A4; margin: 0; }
+  body.print-doc { background: #fff !important; margin: 0; }
+  body.print-doc > *:not(#print-area) { display: none !important; }
+  body.print-doc #print-area { display: block !important; }
+  .lh-page { box-shadow: none; margin: 0; page-break-after: always; break-after: page; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .lh-page:last-child { page-break-after: auto; break-after: auto; }
+}
+#print-area { display: none; }
+/* compact org chart for the printed attachment (fits one A4 page) */
+.chart-page .oc-grid { grid-template-columns: repeat(4, 1fr); gap: 2.5mm; }
+.chart-page .oc-card.sm { padding: .8mm 1.8mm; border-radius: 4px; }
+.chart-page .oc-card.sm b, .chart-page .oc-card.sm span { display: inline; font-size: 7.4pt; }
+.chart-page .oc-card.sm span::before { content: " · "; color: #999; }
+.chart-page .oc-card.sm small { display: none; }
+.chart-page .oc-list li { margin: .8mm 0; } .chart-page .oc-list li::before { top: 2.4mm; }
+.chart-page .oc-card.head { padding: 1.2mm 2mm; }
+.chart-page .doc-title { margin-bottom: 3mm; }
+.lh-page.chart-page { padding-right: 10mm; padding-left: 20mm; }
+.chart-page .lh-head { margin-bottom: 3mm; }
+.chart-page .lh-logo { width: 15mm; height: 15mm; }
+.chart-page .lh-brand { flex-direction: row; align-items: center; }
+.chart-page .oc-card.sm b, .chart-page .oc-card.sm span { display: block; line-height: 1.25; }
+.chart-page .oc-card.sm b { font-size: 7.2pt; } .chart-page .oc-card.sm span { font-size: 6.6pt; }
+.chart-page .oc-card.sm span::before { content: none; }
+.chart-page .oc-card.lg { padding: 1.2mm 4mm; } .chart-page .oc-card.lg b { font-size: 9.5pt; }
+.chart-page .oc-card.head b { font-size: 7.6pt; } .chart-page .oc-card.head span, .chart-page .oc-card.head small { font-size: 6.8pt; }
+.chart-page .oc-arrow { height: 3.5mm; margin-bottom: 1.5mm; }
+.chart-page .oc-grid { padding-top: 3mm; gap: 2mm; }
+.chart-page .oc-list { margin-left: 1.5mm; padding-left: 2.5mm; } .chart-page .oc-list li::before { left: -2.5mm; width: 2.5mm; top: 2.6mm; }
+@media (max-width: 1180px) and (min-width: 901px) { nav.main { gap: 12px; font-size: .92rem; } .brand small { display: none; } }

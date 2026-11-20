@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Our Team | Ali Medical Complex, Multan</title>
+  <meta name="description" content="Organisation chart and team of Ali Medical Complex, Multan: management, specialists, allied health, nursing and support staff.">
+  <meta property="og:title" content="Our Team | Ali Medical Complex, Multan">
+  <meta property="og:description" content="Organisation chart and team of Ali Medical Complex, Multan: management, specialists, allied health, nursing and support staff.">
+  <meta name="theme-color" content="#0b6e74">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles.css">
+  <script src="i18n.js"></script>
+</head>
+<body>
+<div id="site-header"></div>
+<main id="main">
+<div class="page-head"><div class="container"><h1>Our Team</h1><p class="muted" style="margin:4px 0 0">The people who run Ali Medical Complex and care for our patients.</p></div></div>
+
+<section>
+  <div class="container">
+    <div class="oc-legend" id="legend"></div>
+    <div id="chart"><p class="muted center">Loading…</p></div>
+  </div>
+</section>
+<div class="cta"><div class="container">
+  <div><h2>Want to see one of our specialists?</h2><p style="margin:6px 0 0;opacity:.9">See timings, fees and book online.</p></div>
+  <a class="btn light" href="doctors.html">View Doctors</a>
+</div></div>
+</main>
+<div id="site-footer"></div>
+<script src="common.js"></script>
+<script src="docs.js"></script>
+<script>
+document.getElementById('legend').innerHTML = Object.entries(GRP_LABEL).filter(([k, v]) => v)
+  .map(([k, v]) => `<span><i style="background:${{ leadership: '#08555a', clinical: '#0b6e74', allied: '#2f8f6f', nursing: '#c2185b', admin: '#e8a33d', support: '#7b8a93' }[k]}"></i>${v}</span>`).join('');
+rpc('amc_team').then(list => { document.getElementById('chart').innerHTML = orgChartHTML(list); })
+  .catch(e => { document.getElementById('chart').innerHTML = `<p class="muted center">${esc(e.message)}</p>`; });
+</script>
+</body>
+</html>

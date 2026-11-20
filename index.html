@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Ali Medical Complex, Multan | Specialist Doctors & Online Appointments</title>
-  <meta name="description" content="Ali Medical Complex, Chungi No. 1, Suraj Miani Road, Multan. Book appointments online with specialist doctors in endocrinology, pediatrics, internal medicine and psychology.">
+  <meta name="description" content="Ali Medical Complex, Chungi No. 1, Suraj Miani Road, Multan. Eye, ENT, heart, women’s health, skin, child and dental specialists, physiotherapy, nutrition, laboratory and pharmacy. Book online.">
   <meta property="og:title" content="Ali Medical Complex, Multan">
   <meta property="og:description" content="Specialist doctors and online appointment booking at Suraj Miani Road, Multan.">
   <meta property="og:type" content="website">
@@ -17,8 +17,8 @@
   <script type="application/ld+json">
   {"@context":"https://schema.org","@type":"Hospital","name":"Ali Medical Complex",
    "address":{"@type":"PostalAddress","streetAddress":"Chungi No. 1, Suraj Miani Road","addressLocality":"Multan","addressRegion":"Punjab","addressCountry":"PK"},
-   "telephone":["+92-61-2039965","+92-300-0270600"],"priceRange":"Rs. 1,000 – 2,500","currenciesAccepted":"PKR",
-   "medicalSpecialty":["Endocrine","Pediatric","Psychiatric"],"url":"https://muhammadhaiderabbas.github.io/AliComplex/"}
+   "telephone":["+92-61-2039965","+92-300-0270600"],"currenciesAccepted":"PKR",
+   "medicalSpecialty":["Optometric","Otolaryngologic","Cardiovascular","Obstetric","Gynecologic","Dermatologic","Pediatric","Dentistry","PhysicalTherapy","DietNutrition","Psychiatric","LaboratoryScience","Pharmacy"],"url":"https://muhammadhaiderabbas.github.io/AliComplex/"}
   </script>
 </head>
 <body>
@@ -29,7 +29,7 @@
     <div>
       <span class="tag">Suraj Miani Road, Multan</span>
       <h1 style="margin-top:14px">Trusted specialist care for you and your family</h1>
-      <p class="lead">Consult experienced doctors in diabetes &amp; hormones, child health, internal medicine and mental health. Book your visit online in under a minute.</p>
+      <p class="lead">Specialists in eye care, ENT, heart, women’s health, skin, child health and dental care, with physiotherapy, nutrition, laboratory and pharmacy under one roof.</p>
       <div class="actions">
         <a class="btn" href="book.html">Book an Appointment</a>
         <a class="btn outline" data-site="phone1" href="tel:0612039965">061-2039965</a>
@@ -40,7 +40,7 @@
       <div class="info-row"><span class="ico">📍</span><div><b>Address</b>Chungi No. 1, Suraj Miani Road, Multan</div></div>
       <div class="info-row"><span class="ico">📞</span><div><b>Phone</b><a data-site="phone1" href="tel:0612039965">061-2039965</a> · <a data-site="phone2" href="tel:03000270600">0300-0270600</a></div></div>
       <div class="info-row"><span class="ico">🕒</span><div><b>OPD Days</b><span data-site="opd_note">Monday – Saturday (timings vary by doctor)</span></div></div>
-      <div class="info-row"><span class="ico">💳</span><div><b>Consultation Fee</b><span id="fee-range">Rs. 1,000 – 2,500</span></div></div>
+      <div class="info-row"><span class="ico">💳</span><div><b>Consultation Fee</b><span id="fee-range">Please call to ask</span></div></div>
     </div>
   </div>
 </section>
@@ -58,7 +58,7 @@
   <div class="container">
     <div class="section-head">
       <h2>Our Specialties</h2>
-      <p class="muted">Specialist consultations under one roof.</p>
+      <p class="muted">Specialist care, therapy, tests and medicines under one roof.</p>
     </div>
     <div class="grid cols-4" id="spec-grid"></div>
     <p class="center" style="margin-top:26px"><a class="btn outline" href="services.html">View all services</a></p>
@@ -81,16 +81,16 @@
     <div>
       <h2>Why patients choose us</h2>
       <ul class="checklist">
-        <li>Qualified specialists, including an Assistant Professor of Medicine</li>
+        <li>Specialists in 10 fields, led by our Head of Clinical Services</li>
         <li>Book online any time and get an instant reference number</li>
         <li>Scheduled time slots for shorter waiting</li>
-        <li>Clear fees shown upfront, paid at the clinic</li>
+        <li>Physiotherapy, nutrition, laboratory and pharmacy on site</li>
         <li>Cancel online, or reach us on WhatsApp for help</li>
       </ul>
       <p style="margin-top:20px"><a class="btn" href="about.html">About the hospital</a></p>
     </div>
     <div class="stats">
-      <div class="stat"><div class="n">4</div><div class="muted">Specialties</div></div>
+      <div class="stat"><div class="n" id="stat-spec">12</div><div class="muted">Services</div></div>
       <div class="stat"><div class="n" id="stat-docs">5</div><div class="muted">Doctors</div></div>
       <div class="stat"><div class="n">6</div><div class="muted">Days a week</div></div>
       <div class="stat"><div class="n">24/7</div><div class="muted">Online booking</div></div>
@@ -115,7 +115,8 @@
 <script src="common.js"></script>
 <script>
   document.getElementById('spec-grid').innerHTML = SPECIALTIES.map(s =>
-    `<a class="card spec-card plain" href="services.html#${s.key}"><div class="ico">${s.icon}</div><h3>${s.name}</h3><p>${s.short}</p></a>`).join('');
+    `<a class="card spec-card plain" href="services.html#${s.name.toLowerCase().replace(/[^a-z]+/g, '-')}"><div class="ico">${s.icon}</div><h3>${s.name}</h3><p>${s.short}</p></a>`).slice(0, 8).join('');
+  document.getElementById('stat-spec').textContent = SPECIALTIES.length;
 
   rpc('amc_doctors').then(docs => {
     document.getElementById('stat-docs').textContent = docs.length;

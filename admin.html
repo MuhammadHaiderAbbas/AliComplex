@@ -66,6 +66,9 @@
       <button data-tab="doctors">Doctors &amp; Leave</button>
       <button data-tab="enq">Enquiries <span class="count hidden" id="c-enq"></span></button>
       <button data-tab="reviews">Reviews <span class="count hidden" id="c-rev"></span></button>
+      <button data-tab="team">Org Chart</button>
+      <button data-tab="payroll">Payroll 🔒</button>
+      <button data-tab="letters">Letters 🔒</button>
       <button data-tab="settings">Settings</button>
     </div>
     <div id="msg"></div>
@@ -174,6 +177,219 @@
     <!-- Reviews -->
     <div id="tab-reviews" class="hidden"><div id="rev-list"></div></div>
 
+    <!-- Org chart -->
+    <div id="tab-team" class="hidden">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:10px;flex-wrap:wrap">
+        <h3 style="margin:0">Organisation chart</h3>
+        <span class="actions-row" style="margin:0"><a class="btn small outline" href="team.html" target="_blank">View on website ↗</a><button class="btn small" onclick="editTeam()">+ Add person</button></span>
+      </div>
+      <p class="muted small">Shown on the website’s “Our Team” page and used in reference letters (who reports to whom).</p>
+      <div class="table-wrap"><table class="data"><thead><tr><th>Name</th><th>Role</th><th>Group</th><th>Reports to</th><th>On site</th><th></th></tr></thead><tbody id="team-rows"></tbody></table></div>
+      <form id="team-form" class="card hidden" style="margin-top:20px">
+        <h3 id="team-form-title">Edit person</h3>
+        <div class="row">
+          <div class="field"><label>Name *</label><input name="name" required></div>
+          <div class="field"><label>Role / position</label><input name="role" placeholder="e.g. Head Nurse"></div>
+        </div>
+        <div class="row">
+          <div class="field"><label>Qualification</label><input name="qualification" placeholder="e.g. MBBS, FCPS"></div>
+          <div class="field"><label>Group (colour on chart)</label><select name="grp">
+            <option value="leadership">Management</option><option value="clinical">Clinical Services</option><option value="allied">Allied Health</option>
+            <option value="nursing">Nursing</option><option value="admin">Administration &amp; Finance</option><option value="support">Support Services</option>
+            <option value="group">Team heading (not a person)</option></select></div>
+        </div>
+        <div class="row3">
+          <div class="field"><label>Reports to</label><select name="parent_id"></select></div>
+          <div class="field"><label>Order</label><input name="sort_order" type="number"></div>
+          <div class="field"><label>Show on website</label><select name="show_on_site"><option value="1">Yes</option><option value="0">No</option></select></div>
+        </div>
+        <div class="actions-row">
+          <button class="btn" type="submit">Save</button>
+          <button class="btn outline" type="button" onclick="$('team-form').classList.add('hidden')">Close</button>
+          <span style="flex:1"></span>
+          <button class="btn outline" type="button" id="team-del" style="color:var(--danger);border-color:var(--danger)">Delete</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Payroll / Letters lock -->
+    <div id="office-lock" class="card hidden" style="max-width:440px;margin:20px auto">
+      <h3>🔒 Payroll is locked</h3>
+      <p class="muted small">Salaries, payslips and letters need the separate payroll password. Once unlocked, this stays open for 30 minutes on this device.</p>
+      <form id="office-form"><div class="field"><label for="office-pw">Payroll password</label><input type="password" id="office-pw" autocomplete="off" required></div>
+        <button class="btn" style="width:100%">Unlock</button></form>
+    </div>
+
+    <!-- Payroll -->
+    <div id="tab-payroll" class="hidden">
+      <div class="actions-row no-print" style="margin:0 0 14px">
+        <button class="btn small sub active" data-sub="slips">Payslips</button>
+        <button class="btn small outline sub" data-sub="emps">Employees</button>
+        <button class="btn small outline sub" data-sub="paycfg">Tax &amp; PF settings</button>
+        <span style="flex:1"></span>
+        <button class="btn small outline office-lock-btn">🔒 Lock payroll</button>
+      </div>
+
+      <div id="sub-slips">
+        <div class="filters" style="grid-template-columns:200px auto auto auto 1fr;align-items:end">
+          <div><label for="p-period">Salary month</label><input type="month" id="p-period"></div>
+          <button class="btn small" id="p-gen">Create drafts for all employees</button>
+          <button class="btn small outline" id="p-csv">⬇ Export CSV</button>
+          <button class="btn small outline" id="p-printall">🖨 Print all issued</button>
+          <span></span>
+        </div>
+        <div class="kpis" id="p-kpis" style="grid-template-columns:repeat(5,1fr)"></div>
+        <div class="table-wrap"><table class="data"><thead><tr><th>Code</th><th>Name</th><th>Designation</th><th class="num">Gross</th><th class="num">W/H Tax</th><th class="num">PF</th><th class="num">Net</th><th>Status</th><th></th></tr></thead><tbody id="p-rows"></tbody></table></div>
+        <p class="muted small">Drafts can be edited. <b>Issue</b> locks a payslip and gives it a verification code. To correct an issued payslip, <b>Void</b> it and create a new one.</p>
+
+        <form id="slip-form" class="card hidden" style="margin-top:20px">
+          <h3 id="slip-title">Edit payslip</h3>
+          <div class="row3">
+            <div class="field"><label>Working days</label><input type="number" name="working_days" min="0" max="31"></div>
+            <div class="field"><label>Days attended</label><input type="number" name="days_attended" min="0" max="31"></div>
+            <div class="field"><label>Leaves</label><input type="number" name="leaves" min="0" max="31"></div>
+          </div>
+          <div class="grid cols-2" style="gap:16px">
+            <div><b>Income</b><div id="earn-rows"></div><button type="button" class="btn small outline" data-add="earn">+ Add income line</button></div>
+            <div><b>Deductions</b><div id="ded-rows"></div><button type="button" class="btn small outline" data-add="ded">+ Add deduction line</button></div>
+          </div>
+          <div class="field" style="margin-top:14px"><label>Remarks (optional, printed on slip)</label><input name="remarks" maxlength="200"></div>
+          <div class="summary" id="slip-totals"></div>
+          <div class="actions-row">
+            <button class="btn" type="submit">Save draft</button>
+            <button class="btn outline" type="button" id="slip-preview">Preview</button>
+            <button class="btn outline" type="button" onclick="$('slip-form').classList.add('hidden')">Close</button>
+          </div>
+        </form>
+      </div>
+
+      <div id="sub-emps" class="hidden">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <p class="muted small" style="margin:0">Salary details here are used to create each month’s payslips.</p>
+          <button class="btn small" onclick="editEmp()">+ Add employee</button>
+        </div>
+        <div class="table-wrap"><table class="data"><thead><tr><th>Code</th><th>Name</th><th>Designation</th><th>Department</th><th class="num">Basic</th><th class="num">Allowances</th><th>PF %</th><th>Tax</th><th>Active</th><th></th></tr></thead><tbody id="e-rows"></tbody></table></div>
+        <form id="emp-form" class="card hidden" style="margin-top:20px">
+          <h3 id="emp-title">Edit employee</h3>
+          <div class="row3">
+            <div class="field"><label>Employee code</label><input name="emp_code" placeholder="auto"></div>
+            <div class="field"><label>Name *</label><input name="name" required></div>
+            <div class="field"><label>Designation</label><input name="designation"></div>
+          </div>
+          <div class="row3">
+            <div class="field"><label>Department</label><input name="department" list="dept-list"><datalist id="dept-list"><option>Management</option><option>Clinical Services</option><option>Allied Health</option><option>Nursing</option><option>Administration &amp; Finance</option><option>Support Services</option></datalist></div>
+            <div class="field"><label>CNIC</label><input name="cnic" placeholder="36302-1234567-1"></div>
+            <div class="field"><label>Phone</label><input name="phone"></div>
+          </div>
+          <div class="row3">
+            <div class="field"><label>Date of joining</label><input name="join_date" type="date"></div>
+            <div class="field"><label>Date of leaving (if left)</label><input name="leave_date" type="date"></div>
+            <div class="field"><label>Bank account no.</label><input name="bank_account"></div>
+          </div>
+          <div class="row3">
+            <div class="field"><label>Employment type</label><select name="employment_type"><option>Full-time</option><option>Part-time</option><option>Contract</option><option>Visiting</option></select></div>
+            <div class="field"><label>Hours per week</label><input name="hours_per_week" type="number" min="1" max="84"></div>
+            <div class="field"><label>Position on org chart</label><select name="team_id"></select></div>
+          </div>
+          <div class="row3">
+            <div class="field"><label>Basic salary (monthly, PKR)</label><input name="basic" type="number" min="0"></div>
+            <div class="field"><label>Provident Fund (% of basic)</label><input name="pf_percent" type="number" min="0" max="50" step="0.01"></div>
+            <div class="field"><label>Withholding tax</label><select name="tax_mode"><option value="auto">Calculate from tax slabs</option><option value="manual">Fixed amount each month</option><option value="none">No tax</option></select></div>
+          </div>
+          <div class="row3">
+            <div class="field"><label>Fixed monthly tax (if fixed)</label><input name="tax_manual" type="number" min="0"></div>
+            <div class="field"><label>Active</label><select name="active"><option value="1">Yes</option><option value="0">No (left / paused)</option></select></div>
+          </div>
+          <b>Monthly allowances</b>
+          <div id="allow-rows"></div>
+          <button type="button" class="btn small outline" data-add="allow">+ Add allowance</button>
+          <div class="actions-row" style="margin-top:16px">
+            <button class="btn" type="submit">Save</button>
+            <button class="btn outline" type="button" onclick="$('emp-form').classList.add('hidden')">Close</button>
+          </div>
+        </form>
+      </div>
+
+      <div id="sub-paycfg" class="hidden">
+        <div class="grid cols-2" style="align-items:start">
+          <form id="tax-form" class="card">
+            <h3>Withholding tax slabs (yearly income)</h3>
+            <p class="muted small">Used when an employee’s tax is set to “Calculate”. Tax = fixed amount + rate × income above the previous limit. <b>Check these against the current Finance Act each July.</b> A medical allowance of up to 10% of basic salary is treated as tax-free.</p>
+            <div class="field"><label>Label</label><input name="tax_year_label"></div>
+            <table class="data" id="slab-table"><thead><tr><th>Income up to (PKR/year)</th><th>Fixed tax (PKR)</th><th>Rate %</th><th></th></tr></thead><tbody></tbody></table>
+            <div class="actions-row"><button type="button" class="btn small outline" id="slab-add">+ Add slab</button></div>
+            <div class="field" style="margin-top:14px"><label>Default Provident Fund % for new employees</label><input name="pf_default" type="number" min="0" max="50" step="0.01"></div>
+            <div class="field"><label>Try it: monthly taxable salary</label><input type="number" id="tax-try" placeholder="e.g. 150000"><div class="muted small" id="tax-try-out"></div></div>
+            <button class="btn" type="submit">Save settings</button>
+          </form>
+          <form id="opw-form" class="card">
+            <h3>Change payroll password</h3>
+            <div class="field"><label>Current payroll password</label><input type="password" id="opw-old" required></div>
+            <div class="field"><label>New password (8+ characters)</label><input type="password" id="opw-new" minlength="8" required></div>
+            <div class="field"><label>Repeat new password</label><input type="password" id="opw-new2" minlength="8" required></div>
+            <button class="btn" type="submit">Change payroll password</button>
+            <p class="muted small">Give this password only to people who handle salaries.</p>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Letters -->
+    <div id="tab-letters" class="hidden">
+      <div class="actions-row no-print" style="margin:0 0 14px">
+        <button class="btn small" id="l-new">+ New letter</button>
+        <a class="btn small outline" href="letterhead.html" target="_blank">Blank letterhead ↗</a>
+        <span style="flex:1"></span>
+        <button class="btn small outline office-lock-btn">🔒 Lock</button>
+      </div>
+      <div class="table-wrap" id="letters-list-wrap"><table class="data"><thead><tr><th>Ref</th><th>Title</th><th>Issued for</th><th>Date</th><th>Status</th><th></th></tr></thead><tbody id="letter-rows"></tbody></table></div>
+
+      <div id="letter-editor" class="hidden" style="margin-top:20px">
+        <div class="grid cols-2" style="align-items:start">
+          <form id="letter-form" class="card">
+            <h3>New letter</h3>
+            <div class="row">
+              <div class="field"><label>Type</label><select name="kind"><option value="general">General letter</option><option value="reference">Employment reference / verification</option></select></div>
+              <div class="field"><label>Date</label><input name="date" type="date"></div>
+            </div>
+            <div class="field ref-only"><label>Employee</label><div style="display:flex;gap:8px"><select name="employee_id" style="flex:1"></select><button type="button" class="btn small outline" id="l-fill">Fill from records</button></div>
+              <p class="muted small">Only state facts that the hospital’s records confirm. The letter certifies that it is based on employment and payroll records.</p></div>
+            <div class="gen-only">
+              <div class="field"><label>Title (for the register)</label><input name="title" placeholder="e.g. Letter to District Health Office"></div>
+              <div class="row"><div class="field"><label>To (name)</label><input name="to_name"></div><div class="field"><label>Subject</label><input name="subject"></div></div>
+              <div class="field"><label>Address lines</label><textarea name="to_lines" rows="2"></textarea></div>
+              <div class="field"><label>Salutation</label><input name="salutation" placeholder="Dear Sir/Madam,"></div>
+              <div class="field"><label>Letter text</label><textarea name="body" rows="9" placeholder="Write the letter. Leave an empty line between paragraphs."></textarea></div>
+            </div>
+            <div class="ref-only">
+              <div class="row"><div class="field"><label>Employee name</label><input name="employee_name"></div><div class="field"><label>CNIC / Passport no.</label><input name="cnic"></div></div>
+              <div class="row"><div class="field"><label>Official position title</label><input name="title_ref"></div><div class="field"><label>Employer legal name</label><input name="employer"></div></div>
+              <div class="row"><div class="field"><label>Start date</label><input name="start_date" type="date"></div><div class="field"><label>End date (empty = present)</label><input name="end_date" type="date"></div></div>
+              <div class="row3"><div class="field"><label>Employment type</label><select name="emp_type"><option>Full-time</option><option>Part-time</option><option>Contract</option></select></div>
+                <div class="field"><label>Hours / week</label><input name="hours" type="number"></div>
+                <div class="field"><label>Gross salary (PKR)</label><input name="salary" type="number" placeholder="leave empty to omit"></div></div>
+              <div class="field"><label>Business address</label><input name="address"></div>
+              <div class="field"><label>Immediate supervisor (name and position)</label><input name="supervisor"></div>
+              <div class="field"><label>Positions / functions managed</label><textarea name="manages" rows="2"></textarea></div>
+              <div class="field"><label>Clinical governance retained by (optional)</label><input name="clinical_lead" placeholder="e.g. Dr. Sarfaraz Ch., Head of Clinical Services"></div>
+              <div class="field"><label>Duties actually performed (one per line)</label><textarea name="duties" rows="8"></textarea></div>
+              <label class="check"><input type="checkbox" name="attach_chart" checked> Attach organisation chart as a second page</label>
+            </div>
+            <h4 style="margin:16px 0 8px">Signed by</h4>
+            <div class="row"><div class="field"><label>Name</label><input name="sign_name"></div><div class="field"><label>Position</label><input name="sign_title"></div></div>
+            <div class="row"><div class="field"><label>Direct telephone</label><input name="sign_phone"></div><div class="field"><label>Work email</label><input name="sign_email"></div></div>
+            <div class="field"><label>Closing</label><input name="closing" value="Yours faithfully,"></div>
+            <div class="actions-row">
+              <button class="btn" type="submit">Issue &amp; print</button>
+              <button class="btn outline" type="button" onclick="$('letter-editor').classList.add('hidden')">Close</button>
+            </div>
+            <p class="muted small">Issuing gives the letter a reference number and verification code and saves it in the register. It cannot be edited afterwards (you can void it).</p>
+          </form>
+          <div><b>Preview</b><div class="doc-scroll" id="l-preview" style="zoom:.62"></div></div>
+        </div>
+      </div>
+    </div>
+
     <!-- Settings -->
     <div id="tab-settings" class="hidden">
       <div class="grid cols-2" style="align-items:start">
@@ -191,6 +407,16 @@
           </div>
           <div class="field"><label>Facebook page link</label><input name="facebook" type="url" placeholder="https://facebook.com/…"></div>
           <div class="field"><label>OPD days text</label><input name="opd_note"></div>
+          <h4 style="margin:18px 0 8px">Letterhead &amp; documents</h4>
+          <div class="row">
+            <div class="field"><label>Legal name of hospital</label><input name="legal_name"></div>
+            <div class="field"><label>Website address</label><input name="website" type="url"></div>
+          </div>
+          <div class="row">
+            <div class="field"><label>Default signatory name</label><input name="signatory_name"></div>
+            <div class="field"><label>Signatory position</label><input name="signatory_title"></div>
+          </div>
+          <p class="small"><a href="letterhead.html" target="_blank">View / print blank letterhead ↗</a></p>
           <button class="btn" type="submit">Save settings</button>
         </form>
         <form id="pw-form" class="card">
@@ -240,9 +466,12 @@
   </div>
 </div>
 
+<div id="print-area"></div>
 <script src="common.js"></script>
+<script src="docs.js"></script>
 <script>
 const $ = id => document.getElementById(id);
+const SITE_KEYS = ['announcement', 'phone1', 'phone2', 'whatsapp', 'email', 'facebook', 'opd_note', 'legal_name', 'website', 'signatory_name', 'signatory_title'];
 let token = null;
 try { token = sessionStorage.getItem('amc_token'); } catch {}
 let doctors = [], editingId = null, lastRows = [], today = todayPK();
@@ -260,6 +489,7 @@ function logout() {
 async function start() {
   $('login').classList.add('hidden'); $('app').classList.remove('hidden'); $('logout').classList.remove('hidden');
   $('f-from').value = $('f-to').value = today;
+  loadSite();
   await loadDoctors();
   await loadDash();
   startPolling();
@@ -276,10 +506,12 @@ $('login').addEventListener('submit', async e => {
 });
 $('logout').onclick = logout;
 
-const loaders = { dash: loadDash, appts: loadAppts, doctors: () => Promise.all([loadDoctors(), loadLeaves()]), enq: loadEnq, reviews: loadReviews, settings: () => Promise.all([loadSettings(), loadAlerts()]) };
+const loaders = { dash: loadDash, appts: loadAppts, doctors: () => Promise.all([loadDoctors(), loadLeaves()]), enq: loadEnq, reviews: loadReviews,
+  team: loadTeam, payroll: () => office(loadPayroll), letters: () => office(loadLetters), settings: () => Promise.all([loadSettings(), loadAlerts()]) };
 document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => {
   document.querySelectorAll('.tabs button').forEach(x => x.classList.toggle('active', x === b));
   Object.keys(loaders).forEach(k => $('tab-' + k).classList.toggle('hidden', k !== b.dataset.tab));
+  $('office-lock').classList.add('hidden');
   Promise.resolve(loaders[b.dataset.tab]()).catch(e => flash(e.message, 'error'));
 });
 
@@ -449,12 +681,12 @@ $('rev-list').addEventListener('click', async e => {
 async function loadSettings() {
   const s = await rpc('amc_site');
   const f = $('site-form');
-  ['announcement', 'phone1', 'phone2', 'whatsapp', 'email', 'facebook', 'opd_note'].forEach(k => f.elements[k].value = s[k] || '');
+  SITE_KEYS.forEach(k => f.elements[k].value = s[k] || '');
 }
 $('site-form').addEventListener('submit', async e => {
   e.preventDefault();
   const f = e.target, body = {};
-  ['announcement', 'phone1', 'phone2', 'whatsapp', 'email', 'facebook', 'opd_note'].forEach(k => body[k] = f.elements[k].value.trim());
+  SITE_KEYS.forEach(k => body[k] = f.elements[k].value.trim());
   try { await aapi('amc_admin_save_site', { p: body }); try { sessionStorage.removeItem('amc_site'); } catch {} flash('Settings saved. The website shows them right away.'); }
   catch (err) { flash(err.message, 'error'); }
 });
@@ -555,6 +787,366 @@ $('tg-off').onclick = async () => {
   if (!confirm('Turn off Telegram alerts?')) return;
   try { await aapi('amc_admin_save_telegram', { p_bot_token: '', p_chats: '' }); flash('Telegram alerts turned off.'); loadAlerts(); } catch (e) { flash(e.message, 'error'); }
 };
+
+// ===== printing =====
+function printDocs(html) {
+  $('print-area').innerHTML = html;
+  document.body.classList.add('print-doc');
+  setTimeout(() => { window.print(); document.body.classList.remove('print-doc'); }, 150);
+}
+
+// ===== org chart =====
+let team = [];
+async function loadTeam() {
+  team = await aapi('amc_admin_team');
+  const kids = id => team.filter(t => t.parent_id === id).sort((a, b) => a.sort_order - b.sort_order || a.id - b.id);
+  const rows = [], ids = new Set(team.map(t => t.id));
+  const walk = (p, depth) => { rows.push([p, depth]); kids(p.id).forEach(k => walk(k, depth + 1)); };
+  team.filter(t => t.parent_id == null || !ids.has(t.parent_id)).forEach(r => walk(r, 0));
+  const name = id => (team.find(t => t.id === id) || {}).name || '—';
+  $('team-rows').innerHTML = rows.map(([t, d]) => `<tr>
+    <td style="padding-left:${12 + d * 22}px">${d ? '└ ' : ''}<b>${esc(t.name)}</b>${t.qualification ? `<div class="muted small" style="padding-left:${d ? 16 : 0}px">${esc(t.qualification)}</div>` : ''}</td>
+    <td>${esc(t.role)}</td><td>${esc(GRP_LABEL[t.grp] || 'Heading')}</td><td>${t.parent_id ? esc(name(t.parent_id)) : '—'}</td>
+    <td>${t.show_on_site ? 'Yes' : 'No'}</td><td><button class="btn small outline" onclick="editTeam(${t.id})">Edit</button></td></tr>`).join('');
+}
+let teamEditing = null;
+function editTeam(id) {
+  const t = team.find(x => x.id === id) || { name: '', role: '', qualification: '', grp: 'clinical', parent_id: null, sort_order: 0, show_on_site: true };
+  teamEditing = id || null;
+  const f = $('team-form');
+  $('team-form-title').textContent = id ? 'Edit ' + t.name : 'Add person';
+  ['name', 'role', 'qualification', 'grp', 'sort_order'].forEach(k => f.elements[k].value = t[k] ?? '');
+  f.elements.show_on_site.value = t.show_on_site ? '1' : '0';
+  f.elements.parent_id.innerHTML = '<option value="">— Nobody (top of chart) —</option>' + team.filter(x => x.id !== id)
+    .map(x => `<option value="${x.id}" ${x.id === t.parent_id ? 'selected' : ''}>${esc(x.name)}${x.role ? ' – ' + esc(x.role) : ''}</option>`).join('');
+  $('team-del').classList.toggle('hidden', !id);
+  f.classList.remove('hidden'); f.scrollIntoView({ behavior: 'smooth' });
+}
+$('team-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const f = e.target, p = {};
+  ['name', 'role', 'qualification', 'grp', 'parent_id', 'sort_order'].forEach(k => p[k] = f.elements[k].value);
+  p.show_on_site = f.elements.show_on_site.value === '1';
+  try { await aapi('amc_admin_save_team', { p_id: teamEditing, p }); flash('Saved.'); f.classList.add('hidden'); loadTeam(); } catch (err) { flash(err.message, 'error'); }
+});
+$('team-del').onclick = async () => {
+  if (!confirm('Remove this person from the chart? Anyone reporting to them will move up one level.')) return;
+  try { await aapi('amc_admin_delete_team', { p_id: teamEditing }); flash('Removed.'); $('team-form').classList.add('hidden'); loadTeam(); } catch (err) { flash(err.message, 'error'); }
+};
+
+// ===== payroll / letters lock =====
+let officeCfg = null, officeNext = null;
+async function office(fn) {
+  try { officeCfg = await aapi('amc_office_settings'); }
+  catch (e) {
+    if (e.code === '28001') { officeNext = fn; document.querySelectorAll('#tab-payroll,#tab-letters').forEach(x => x.classList.add('hidden')); $('office-lock').classList.remove('hidden'); $('office-pw').focus(); return; }
+    throw e;
+  }
+  return fn();
+}
+$('office-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  try {
+    await aapi('amc_office_unlock', { p_password: $('office-pw').value });
+    $('office-pw').value = ''; $('office-lock').classList.add('hidden');
+    $('tab-' + document.querySelector('.tabs button.active').dataset.tab).classList.remove('hidden');
+    officeCfg = await aapi('amc_office_settings'); if (officeNext) officeNext();
+  } catch (err) { flash(err.message, 'error'); }
+});
+document.querySelectorAll('.office-lock-btn').forEach(b => b.onclick = async () => {
+  await aapi('amc_office_lock').catch(() => {});
+  document.querySelector('.tabs button[data-tab=dash]').click(); flash('Payroll locked.');
+});
+
+// ===== payroll =====
+let emps = [], slips = [], slipEditing = null;
+const thisMonth = () => todayPK().slice(0, 7);
+document.querySelectorAll('#tab-payroll .sub').forEach(b => b.onclick = () => {
+  document.querySelectorAll('#tab-payroll .sub').forEach(x => { x.classList.toggle('active', x === b); x.classList.toggle('outline', x !== b); });
+  ['slips', 'emps', 'paycfg'].forEach(k => $('sub-' + k).classList.toggle('hidden', k !== b.dataset.sub));
+  ({ slips: loadSlips, emps: loadEmps, paycfg: loadPayCfg })[b.dataset.sub]();
+});
+async function loadPayroll() { if (!$('p-period').value) $('p-period').value = thisMonth(); await loadEmps(); await loadSlips(); }
+
+// tax for a month: yearly slabs applied to (monthly taxable × 12)
+function monthlyTax(monthlyTaxable) {
+  const slabs = (officeCfg?.tax_slabs || []).slice().sort((a, b) => (a.upto ?? Infinity) - (b.upto ?? Infinity));
+  const annual = Math.max(0, monthlyTaxable) * 12;
+  let prev = 0;
+  for (const s of slabs) {
+    if (s.upto == null || annual <= s.upto) return Math.round((Number(s.base) + (annual - prev) * Number(s.rate) / 100) / 12);
+    prev = s.upto;
+  }
+  return 0;
+}
+function workingDays(period) {
+  const [y, m] = period.split('-').map(Number); let n = 0;
+  for (let d = 1; d <= new Date(y, m, 0).getDate(); d++) if (new Date(y, m - 1, d).getDay() !== 0) n++;   // Mon–Sat
+  return n;
+}
+function maskAcc(a) { return a && a.length > 4 ? '•••• ' + a.slice(-4) : a; }
+function buildSlip(e, period) {
+  const earnings = [{ name: 'Basic Salary', amount: e.basic }, ...(e.allowances || []).filter(a => a.name && Number(a.amount)).map(a => ({ name: a.name, amount: Number(a.amount) }))];
+  const gross = earnings.reduce((t, x) => t + Number(x.amount), 0);
+  const med = earnings.filter(x => /medical/i.test(x.name)).reduce((t, x) => t + Number(x.amount), 0);
+  const taxable = gross - Math.min(med, Math.round(e.basic * 0.1));
+  const tax = e.tax_mode === 'none' ? 0 : e.tax_mode === 'manual' ? Number(e.tax_manual) : monthlyTax(taxable);
+  const pf = Math.round(e.basic * Number(e.pf_percent) / 100);
+  const wd = workingDays(period);
+  return { name: e.name, designation: e.designation, department: e.department, emp_code: e.emp_code, join_date: e.join_date, bank_account: maskAcc(e.bank_account),
+    period_label: periodLabel(period), working_days: wd, days_attended: wd, leaves: 0, remarks: '',
+    earnings, deductions: [{ name: 'Provident Fund Contribution', amount: pf }, { name: 'Withholding Tax', amount: tax }] };
+}
+
+async function loadSlips() {
+  const period = $('p-period').value || thisMonth();
+  slips = await aapi('amc_office_payslips', { p_period: period });
+  const live = slips.filter(s => s.status !== 'void');
+  const sum = f => live.reduce((t, s) => t + f(s), 0);
+  const ded = (s, re) => (s.data.deductions.find(x => re.test(x.name)) || {}).amount || 0;
+  $('p-kpis').innerHTML = [['Payslips', live.length + ' / ' + emps.filter(e => e.active).length], ['Gross total', 'Rs. ' + money(sum(s => s.data.gross))],
+    ['Withholding tax', 'Rs. ' + money(sum(s => ded(s, /tax/i)))], ['Provident Fund', 'Rs. ' + money(sum(s => ded(s, /provident/i)))], ['Net payable', 'Rs. ' + money(sum(s => s.data.net))]]
+    .map(([k, v]) => `<div class="kpi"><div class="muted small">${k}</div><div class="n" style="font-size:1.3rem">${v}</div></div>`).join('');
+  $('p-rows').innerHTML = slips.length ? slips.map(s => `<tr style="${s.status === 'void' ? 'opacity:.55' : ''}">
+    <td>${esc(s.data.emp_code)}</td><td><b>${esc(s.data.name)}</b></td><td>${esc(s.data.designation)}</td>
+    <td class="num">${money(s.data.gross)}</td><td class="num">${money(ded(s, /tax/i))}</td><td class="num">${money(ded(s, /provident/i))}</td><td class="num"><b>${money(s.data.net)}</b></td>
+    <td><span class="badge ${s.status === 'issued' ? 'completed' : s.status === 'void' ? 'cancelled' : 'pending'}">${s.status}</span>${s.verify_code ? `<div class="muted small">${s.verify_code}</div>` : ''}</td>
+    <td style="white-space:nowrap">${s.status === 'draft' ? `<button class="btn small outline" data-slip="edit" data-id="${s.id}">Edit</button> <button class="btn small" data-slip="issue" data-id="${s.id}">Issue</button> <button class="btn small outline" data-slip="delete" data-id="${s.id}">✕</button>` : ''}
+      <button class="btn small outline" data-slip="print" data-id="${s.id}">Print</button>
+      ${s.status === 'issued' ? `<button class="btn small outline" data-slip="void" data-id="${s.id}">Void</button>` : ''}</td></tr>`).join('')
+    : `<tr><td colspan="9" class="muted center" style="padding:30px">No payslips for ${periodLabel(period)} yet. Click “Create drafts for all employees”.</td></tr>`;
+}
+$('p-period').addEventListener('change', loadSlips);
+$('p-gen').onclick = async () => {
+  const period = $('p-period').value || thisMonth();
+  const have = new Set(slips.filter(s => s.status !== 'void').map(s => s.employee_id));
+  const todo = emps.filter(e => e.active && !have.has(e.id));
+  if (!todo.length) return flash('Every active employee already has a payslip for this month.', 'info');
+  const noPay = todo.filter(e => !e.basic).length;
+  if (!confirm(`Create ${todo.length} draft payslip(s) for ${periodLabel(period)}?` + (noPay ? `\n\n${noPay} employee(s) have no basic salary set yet; their slips will show 0. Set salaries under “Employees” first if needed.` : ''))) return;
+  let ok = 0;
+  for (const e of todo) { try { await aapi('amc_office_save_payslip', { p_id: null, p_employee_id: e.id, p_period: period, p_fy: fyFor(period), p_data: buildSlip(e, period) }); ok++; } catch (err) { flash(err.message, 'error'); } }
+  flash(`${ok} draft payslip(s) created.`); loadSlips();
+};
+$('p-rows').addEventListener('click', async e => {
+  const b = e.target.closest('[data-slip]'); if (!b) return;
+  const s = slips.find(x => x.id === Number(b.dataset.id)), act = b.dataset.slip;
+  if (act === 'print') return printDocs(payslipHTML(s));
+  if (act === 'edit') return editSlip(s);
+  const msg = { issue: `Issue this payslip for ${s.data.name}? It will be locked and get a verification code.`, void: `Void this payslip for ${s.data.name}? It will show as cancelled if anyone verifies it.`, delete: 'Delete this draft?' }[act];
+  if (!confirm(msg)) return;
+  try { await aapi('amc_office_payslip_action', { p_id: s.id, p_action: act }); flash(act === 'issue' ? 'Payslip issued.' : act === 'void' ? 'Payslip voided.' : 'Draft deleted.'); loadSlips(); } catch (err) { flash(err.message, 'error'); }
+});
+$('p-printall').onclick = () => {
+  const list = slips.filter(s => s.status === 'issued');
+  if (!list.length) return flash('No issued payslips for this month yet.', 'info');
+  printDocs(list.map(payslipHTML).join(''));
+};
+$('p-csv').onclick = () => {
+  const ded = (s, re) => (s.data.deductions.find(x => re.test(x.name)) || {}).amount || 0;
+  const q = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
+  const head = ['Employee code', 'Name', 'Designation', 'Department', 'Bank A/C', 'Gross', 'Withholding tax', 'Provident Fund', 'Total deductions', 'Net', 'Status', 'Verification code'];
+  const csv = '﻿' + [head.join(','), ...slips.map(s => {
+    const e = emps.find(x => x.id === s.employee_id) || {};
+    return [s.data.emp_code, s.data.name, s.data.designation, s.data.department, e.bank_account, s.data.gross, ded(s, /tax/i), ded(s, /provident/i), s.data.total_deductions, s.data.net, s.status, s.verify_code].map(q).join(',');
+  })].join('\r\n');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' })); a.download = `payroll-${$('p-period').value}.csv`; a.click();
+};
+
+const lineRow = (cls, x = { name: '', amount: '' }) => `<div class="${cls}" style="display:grid;grid-template-columns:1fr 120px 34px;gap:6px;margin:6px 0">
+  <input value="${esc(x.name)}" placeholder="Particulars" aria-label="Particulars"><input type="number" value="${esc(x.amount)}" placeholder="Amount" aria-label="Amount"><button type="button" class="btn small outline" data-del>✕</button></div>`;
+const readLines = cls => [...document.querySelectorAll('.' + cls)].map(r => { const [n, a] = r.querySelectorAll('input'); return { name: n.value.trim(), amount: Math.round(Number(a.value) || 0) }; }).filter(x => x.name);
+document.addEventListener('click', e => {
+  if (e.target.matches('[data-del]')) { const f = e.target.closest('form'); e.target.parentElement.remove(); if (f?.id === 'slip-form') slipTotals(); }
+  const add = e.target.dataset?.add;
+  if (add === 'earn') $('earn-rows').insertAdjacentHTML('beforeend', lineRow('earn-line'));
+  if (add === 'ded') $('ded-rows').insertAdjacentHTML('beforeend', lineRow('ded-line'));
+  if (add === 'allow') $('allow-rows').insertAdjacentHTML('beforeend', lineRow('allow-line'));
+});
+function slipTotals() {
+  const g = readLines('earn-line').reduce((t, x) => t + x.amount, 0), d = readLines('ded-line').reduce((t, x) => t + x.amount, 0);
+  $('slip-totals').innerHTML = `<div><span class="muted">Gross income</span><b>Rs. ${money(g)}</b></div><div><span class="muted">Total deductions</span><span>Rs. ${money(d)}</span></div><div><span class="muted">Net income</span><b>Rs. ${money(g - d)}</b></div>`;
+}
+$('slip-form').addEventListener('input', slipTotals);
+function slipFromForm() {
+  const f = $('slip-form'), s = slips.find(x => x.id === slipEditing);
+  return { ...s.data, working_days: Number(f.elements.working_days.value) || 0, days_attended: Number(f.elements.days_attended.value) || 0,
+    leaves: Number(f.elements.leaves.value) || 0, remarks: f.elements.remarks.value.trim(), earnings: readLines('earn-line'), deductions: readLines('ded-line') };
+}
+function editSlip(s) {
+  slipEditing = s.id;
+  const f = $('slip-form');
+  $('slip-title').textContent = `Payslip – ${s.data.name}, ${s.data.period_label}`;
+  ['working_days', 'days_attended', 'leaves', 'remarks'].forEach(k => f.elements[k].value = s.data[k] ?? '');
+  $('earn-rows').innerHTML = s.data.earnings.map(x => lineRow('earn-line', x)).join('');
+  $('ded-rows').innerHTML = s.data.deductions.map(x => lineRow('ded-line', x)).join('');
+  slipTotals(); f.classList.remove('hidden'); f.scrollIntoView({ behavior: 'smooth' });
+}
+$('slip-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const s = slips.find(x => x.id === slipEditing);
+  try { await aapi('amc_office_save_payslip', { p_id: s.id, p_employee_id: s.employee_id, p_period: s.period, p_fy: s.fy, p_data: slipFromForm() });
+    flash('Payslip saved.'); $('slip-form').classList.add('hidden'); loadSlips(); } catch (err) { flash(err.message, 'error'); }
+});
+$('slip-preview').onclick = () => {
+  const s = slips.find(x => x.id === slipEditing), d = slipFromForm();
+  const g = d.earnings.reduce((t, x) => t + x.amount, 0), t = d.deductions.reduce((a, x) => a + x.amount, 0);
+  printDocs(payslipHTML({ ...s, data: { ...d, gross: g, total_deductions: t, net: g - t } }));
+};
+
+// employees
+let empEditing = null;
+async function loadEmps() {
+  emps = await aapi('amc_office_employees');
+  if (!team.length) team = await aapi('amc_admin_team');
+  $('e-rows').innerHTML = emps.map(e => `<tr style="${e.active ? '' : 'opacity:.55'}">
+    <td>${esc(e.emp_code)}</td><td><b>${esc(e.name)}</b></td><td>${esc(e.designation)}</td><td>${esc(e.department)}</td>
+    <td class="num">${e.basic ? money(e.basic) : '<span class="pill red">not set</span>'}</td><td class="num">${money((e.allowances || []).reduce((t, a) => t + Number(a.amount || 0), 0))}</td>
+    <td>${Number(e.pf_percent)}</td><td>${e.tax_mode === 'auto' ? 'Slabs' : e.tax_mode === 'manual' ? 'Rs. ' + money(e.tax_manual) : 'None'}</td><td>${e.active ? 'Yes' : 'No'}</td>
+    <td><button class="btn small outline" onclick="editEmp(${e.id})">Edit</button></td></tr>`).join('');
+}
+function editEmp(id) {
+  const e = emps.find(x => x.id === id) || { emp_code: '', name: '', designation: '', department: '', cnic: '', phone: '', join_date: '', leave_date: '', employment_type: 'Full-time',
+    hours_per_week: 48, bank_account: '', basic: 0, allowances: [{ name: 'House Rent Allowance', amount: '' }, { name: 'Medical Allowance', amount: '' }, { name: 'Utility Allowance', amount: '' }],
+    pf_percent: officeCfg?.pf_default || 0, tax_mode: 'auto', tax_manual: 0, team_id: null, active: true };
+  empEditing = id || null;
+  const f = $('emp-form');
+  $('emp-title').textContent = id ? 'Edit ' + e.name : 'Add employee';
+  ['emp_code', 'name', 'designation', 'department', 'cnic', 'phone', 'join_date', 'leave_date', 'employment_type', 'hours_per_week', 'bank_account', 'basic', 'pf_percent', 'tax_mode', 'tax_manual']
+    .forEach(k => f.elements[k].value = e[k] ?? '');
+  f.elements.active.value = e.active ? '1' : '0';
+  f.elements.team_id.innerHTML = '<option value="">— Not on chart —</option>' + team.filter(t => t.grp !== 'group').map(t => `<option value="${t.id}" ${t.id === e.team_id ? 'selected' : ''}>${esc(t.name)} – ${esc(t.role)}</option>`).join('');
+  $('allow-rows').innerHTML = (e.allowances || []).map(a => lineRow('allow-line', a)).join('');
+  f.classList.remove('hidden'); f.scrollIntoView({ behavior: 'smooth' });
+}
+$('emp-form').addEventListener('submit', async ev => {
+  ev.preventDefault();
+  const f = ev.target, p = {};
+  ['emp_code', 'name', 'designation', 'department', 'cnic', 'phone', 'join_date', 'leave_date', 'employment_type', 'hours_per_week', 'bank_account', 'basic', 'pf_percent', 'tax_mode', 'tax_manual', 'team_id']
+    .forEach(k => p[k] = f.elements[k].value);
+  p.active = f.elements.active.value === '1';
+  p.allowances = readLines('allow-line').filter(a => a.amount);
+  try { await aapi('amc_office_save_employee', { p_id: empEditing, p }); flash('Employee saved.'); f.classList.add('hidden'); loadEmps(); } catch (err) { flash(err.message, 'error'); }
+});
+
+// tax & PF settings
+function slabRow(s = { upto: '', base: '', rate: '' }) {
+  return `<tr><td><input type="number" value="${s.upto ?? ''}" placeholder="and above"></td><td><input type="number" value="${s.base}"></td><td><input type="number" step="0.01" value="${s.rate}"></td><td><button type="button" class="btn small outline" data-delslab>✕</button></td></tr>`;
+}
+async function loadPayCfg() {
+  officeCfg = await aapi('amc_office_settings');
+  const f = $('tax-form');
+  f.elements.tax_year_label.value = officeCfg.tax_year_label || ''; f.elements.pf_default.value = officeCfg.pf_default ?? 0;
+  $('slab-table').tBodies[0].innerHTML = officeCfg.tax_slabs.map(slabRow).join('');
+}
+const readSlabs = () => [...$('slab-table').tBodies[0].rows].map(r => { const [u, b, t] = r.querySelectorAll('input');
+  return { upto: u.value === '' ? null : Number(u.value), base: Number(b.value) || 0, rate: Number(t.value) || 0 }; });
+$('slab-add').onclick = () => $('slab-table').tBodies[0].insertAdjacentHTML('beforeend', slabRow());
+$('slab-table').addEventListener('click', e => { if (e.target.matches('[data-delslab]')) e.target.closest('tr').remove(); });
+$('tax-try').oninput = () => { officeCfg = { ...officeCfg, tax_slabs: readSlabs() }; const v = Number($('tax-try').value);
+  $('tax-try-out').textContent = v ? `Monthly tax: Rs. ${money(monthlyTax(v))} (yearly income Rs. ${money(v * 12)})` : ''; };
+$('tax-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  try { officeCfg = await aapi('amc_office_settings', { p: { tax_slabs: readSlabs(), tax_year_label: e.target.elements.tax_year_label.value, pf_default: e.target.elements.pf_default.value } });
+    flash('Tax and PF settings saved.'); } catch (err) { flash(err.message, 'error'); }
+});
+$('opw-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  if ($('opw-new').value !== $('opw-new2').value) return flash('New passwords do not match.', 'error');
+  try { await aapi('amc_office_change_password', { p_old: $('opw-old').value, p_new: $('opw-new').value }); e.target.reset();
+    flash('Payroll password changed. Payroll is now locked on all devices.'); document.querySelector('.tabs button[data-tab=dash]').click(); } catch (err) { flash(err.message, 'error'); }
+});
+
+// ===== letters =====
+let letters = [];
+async function loadLetters() {
+  letters = await aapi('amc_office_letters');
+  if (!emps.length) emps = await aapi('amc_office_employees');
+  if (!team.length) team = await aapi('amc_admin_team');
+  $('letter-rows').innerHTML = letters.length ? letters.map(l => `<tr style="${l.status === 'void' ? 'opacity:.55' : ''}">
+    <td><b>${esc(l.ref_no)}</b><div class="muted small">${esc(l.verify_code)}</div></td><td>${esc(l.title)}</td>
+    <td>${esc(l.data.employee_name || l.data.to_name || '—')}</td><td>${fmtDate(l.created_at)}</td>
+    <td><span class="badge ${l.status === 'issued' ? 'completed' : 'cancelled'}">${l.status}</span></td>
+    <td style="white-space:nowrap"><button class="btn small outline" data-letter="print" data-id="${l.id}">Print</button>
+      ${l.status === 'issued' ? `<button class="btn small outline" data-letter="void" data-id="${l.id}">Void</button>` : ''}</td></tr>`).join('')
+    : '<tr><td colspan="6" class="muted center" style="padding:30px">No letters issued yet.</td></tr>';
+}
+async function letterPages(kind, d, ref, code, status) {
+  let html = kind === 'reference' ? referenceLetterHTML(d, ref, code, status) : generalLetterHTML(d, ref, code, status);
+  if (kind === 'reference' && d.attach_chart) {
+    const list = await rpc('amc_team');
+    html += letterheadHTML(`<div class="doc-title">ORGANISATION CHART</div>${orgChartHTML(list)}<p class="fine">Attachment to letter ${esc(ref || '')}</p>`, { footer: verifyFooter(ref, code) })
+      .replace('<div class="lh-page" data-no-tr>', '<div class="lh-page chart-page" data-no-tr>');
+  }
+  return html;
+}
+$('letter-rows').addEventListener('click', async e => {
+  const b = e.target.closest('[data-letter]'); if (!b) return;
+  const l = letters.find(x => x.id === Number(b.dataset.id));
+  if (b.dataset.letter === 'print') return printDocs(await letterPages(l.kind, l.data, l.ref_no, l.verify_code, l.status));
+  if (!confirm(`Void letter ${l.ref_no}? Anyone who verifies it will see it was cancelled.`)) return;
+  try { await aapi('amc_office_void_letter', { p_id: l.id }); flash('Letter voided.'); loadLetters(); } catch (err) { flash(err.message, 'error'); }
+});
+const LF = () => $('letter-form');
+function letterKind() {
+  const ref = LF().elements.kind.value === 'reference';
+  document.querySelectorAll('#letter-form .ref-only').forEach(x => x.classList.toggle('hidden', !ref));
+  document.querySelectorAll('#letter-form .gen-only').forEach(x => x.classList.toggle('hidden', ref));
+}
+function letterData() {
+  const d = {}; [...LF().elements].forEach(el => { if (el.name && el.name !== 'kind') d[el.name] = el.type === 'checkbox' ? el.checked : el.value; });
+  d.title = LF().elements.kind.value === 'reference' ? d.title_ref : d.title;
+  d.employer = d.employer || HOSPITAL.legal_name;
+  return d;
+}
+async function letterPreview() {
+  const d = letterData();
+  $('l-preview').innerHTML = await letterPages(LF().elements.kind.value, d, null, null, 'issued');
+}
+$('l-new').onclick = () => {
+  const f = LF(); f.reset();
+  f.elements.date.value = todayPK();
+  f.elements.sign_name.value = HOSPITAL.signatory_name || ''; f.elements.sign_title.value = HOSPITAL.signatory_title || '';
+  f.elements.sign_phone.value = HOSPITAL.phone1 || ''; f.elements.sign_email.value = HOSPITAL.email || '';
+  f.elements.employer.value = HOSPITAL.legal_name || 'Ali Medical Complex';
+  f.elements.address.value = HOSPITAL.address + ', Punjab, Pakistan';
+  f.elements.employee_id.innerHTML = '<option value="">— Choose employee —</option>' + emps.map(e => `<option value="${e.id}">${esc(e.name)} – ${esc(e.designation)}</option>`).join('');
+  letterKind(); $('letter-editor').classList.remove('hidden'); letterPreview(); $('letter-editor').scrollIntoView({ behavior: 'smooth' });
+};
+LF().elements.kind.addEventListener('change', () => { letterKind(); letterPreview(); });
+let lpT; LF().addEventListener('input', () => { clearTimeout(lpT); lpT = setTimeout(letterPreview, 300); });
+$('l-fill').onclick = () => {
+  const e = emps.find(x => x.id === Number(LF().elements.employee_id.value));
+  if (!e) return flash('Choose an employee first.', 'error');
+  const f = LF().elements, t = team.find(x => x.id === e.team_id), boss = t && team.find(x => x.id === t.parent_id);
+  const reports = t ? team.filter(x => x.parent_id === t.id) : [];
+  const expand = x => x.grp === 'group' ? team.filter(y => y.parent_id === x.id).map(y => `${y.name} (${y.role})`).join(', ') : `${x.name} (${x.role})`;
+  const hcs = team.find(x => /head of clinical/i.test(x.role));
+  f.employee_name.value = e.name; f.cnic.value = e.cnic; f.title_ref.value = e.designation;
+  f.start_date.value = e.join_date || ''; f.end_date.value = e.leave_date || ''; f.emp_type.value = e.employment_type; f.hours.value = e.hours_per_week;
+  f.salary.value = e.basic ? e.basic + (e.allowances || []).reduce((s, a) => s + Number(a.amount || 0), 0) : '';
+  f.supervisor.value = boss ? `${boss.name}, ${boss.role}` : '';
+  f.manages.value = reports.map(expand).filter(Boolean).join('; ');
+  f.clinical_lead.value = hcs && hcs.id !== e.team_id && reports.some(r => r.id === hcs.id) ? `${hcs.name}, ${hcs.role}` : '';
+  if (!e.join_date) flash('This employee has no joining date in their record. Add it under Payroll → Employees.', 'error');
+  letterPreview();
+};
+LF().addEventListener('submit', async e => {
+  e.preventDefault();
+  const kind = LF().elements.kind.value, d = letterData();
+  if (kind === 'reference') {
+    if (!d.employee_name || !d.title_ref || !d.start_date) return flash('Employee name, position and start date are required.', 'error');
+    if (!LF().elements.employee_id.value) return flash('Choose the employee from the records.', 'error');
+  } else if (!d.body.trim()) return flash('Please write the letter text.', 'error');
+  if (!d.sign_name) return flash('Please enter who signs the letter.', 'error');
+  if (!confirm('Issue this letter? It will get a reference number and be saved in the register.')) return;
+  try {
+    const r = await aapi('amc_office_issue_letter', { p_kind: kind, p_employee_id: Number(LF().elements.employee_id.value) || null,
+      p_title: kind === 'reference' ? 'Employment reference – ' + d.employee_name : d.title || d.subject || 'Letter', p_data: d });
+    flash(`Letter ${r.ref_no} issued.`); $('letter-editor').classList.add('hidden'); loadLetters();
+    printDocs(await letterPages(kind, d, r.ref_no, r.verify_code, 'issued'));
+  } catch (err) { flash(err.message, 'error'); }
+});
 
 if (token) start().catch(logout);
 </script>

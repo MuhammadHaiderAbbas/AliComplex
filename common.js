@@ -15,6 +15,10 @@ const HOSPITAL = {
   email: '',
   facebook: '',
   opd_note: 'Monday – Saturday (timings vary by doctor)',
+  website: 'https://muhammadhaiderabbas.github.io/AliComplex/',
+  legal_name: 'Ali Medical Complex',
+  signatory_name: 'Dr. Shahid Javed Ch.',
+  signatory_title: 'Director',
   announcement: ''
 };
 HOSPITAL.mapsUrl = 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent('Ali Medical Complex, Chungi No 1, Suraj Miani Road, Multan');
@@ -72,14 +76,30 @@ const isBookable = d => Object.keys(d.schedule || {}).length > 0;
 
 // Specialty info used on Home, Services and Doctors pages
 const SPECIALTIES = [
-  { key: 'Endocrinologist', name: 'Endocrinology', icon: '🩸', short: 'Diabetes, thyroid, hormonal disorders, PCOS, obesity and weight management.',
-    conditions: ['Type 1 & Type 2 diabetes', 'Thyroid disorders (hypo/hyperthyroidism, goitre)', 'PCOS and hormonal imbalance', 'Obesity and weight management', 'High cholesterol', 'Growth and pituitary disorders', 'Osteoporosis and calcium problems'] },
+  { key: 'Ophthalmologist', name: 'Eye Care', icon: '👁️', short: 'Eye check-ups, vision problems, eye infections, cataract and glaucoma assessment.',
+    conditions: ['Blurred or weak vision', 'Red, itchy or watery eyes', 'Eye infections and allergies', 'Cataract assessment', 'Glaucoma screening', 'Diabetic eye check-ups'] },
+  { key: 'ENT Specialist', name: 'ENT (Ear, Nose & Throat)', icon: '👂', short: 'Ear, nose, throat and sinus problems in adults and children.',
+    conditions: ['Ear pain, discharge and wax', 'Hearing problems', 'Sinusitis and nasal blockage', 'Tonsils and sore throat', 'Allergic rhinitis', 'Voice and swallowing problems'] },
+  { key: 'Cardiologist', name: 'Cardiology', icon: '❤️', short: 'Heart health, chest pain, blood pressure and cholesterol.',
+    conditions: ['Chest pain and palpitations', 'High blood pressure', 'High cholesterol', 'Heart failure follow-up', 'Shortness of breath', 'Heart check-ups before surgery'] },
+  { key: 'Gynecologist', name: 'Gynecology & Obstetrics', icon: '🤰', short: 'Pregnancy care and women’s health at every age.',
+    conditions: ['Antenatal (pregnancy) check-ups', 'Irregular or painful periods', 'PCOS', 'Infertility consultation', 'Family planning', 'Menopause problems'] },
+  { key: 'Dermatologist', name: 'Dermatology', icon: '🧴', short: 'Skin, hair and nail problems.',
+    conditions: ['Acne and scars', 'Eczema and allergies', 'Fungal infections', 'Hair fall', 'Pigmentation and melasma', 'Psoriasis'] },
   { key: 'Pediatrician', name: 'Pediatrics', icon: '👶', short: 'Newborn care, vaccination, child nutrition, growth and childhood illnesses.',
-    conditions: ['Newborn check-ups', 'Vaccination schedule', 'Fever, cough, diarrhoea and infections', 'Growth and development concerns', 'Child nutrition and feeding advice', 'Asthma and allergies in children', 'Colic and newborn problems'] },
-  { key: 'Internal Medicine', name: 'Internal Medicine', icon: '🩺', short: 'Blood pressure, diabetes, infections, stomach and liver problems in adults.',
-    conditions: ['High blood pressure', 'Diabetes follow-up', 'Fever and infections (typhoid, dengue)', 'Stomach, acidity and liver problems', 'Hepatitis B & C', 'General health check-ups'] },
-  { key: 'Psychologist', name: 'Psychology', icon: '🧠', short: 'Anxiety, depression, OCD, stress, family counselling and child behaviour.',
-    conditions: ['Anxiety and panic attacks', 'Depression and low mood', 'OCD', 'Stress and anger management', 'Family and marriage counselling', 'Child behaviour and learning problems', 'Psychological assessment and IQ testing'] }
+    conditions: ['Newborn check-ups', 'Vaccination schedule', 'Fever, cough, diarrhoea and infections', 'Growth and development concerns', 'Child nutrition and feeding advice', 'Asthma and allergies in children'] },
+  { key: 'Dentist', name: 'Dental Care', icon: '🦷', short: 'Check-ups, fillings, extractions and gum care.',
+    conditions: ['Toothache and cavities', 'Fillings', 'Tooth extraction', 'Scaling and gum problems', 'Children’s dental care', 'Bad breath'] },
+  { key: 'Physiotherapist', name: 'Physiotherapy', icon: '🦵', short: 'Rehabilitation for pain, injuries, stroke and after surgery.',
+    conditions: ['Back and neck pain', 'Knee and joint pain', 'Sports injuries', 'Stroke rehabilitation', 'Frozen shoulder', 'Rehab after fractures and surgery'] },
+  { key: 'Nutritionist', name: 'Nutrition & Diet', icon: '🥗', short: 'Diet plans for weight, diabetes, pregnancy and children.',
+    conditions: ['Weight loss and weight gain', 'Diet for diabetes and blood pressure', 'Pregnancy and breastfeeding nutrition', 'Child nutrition', 'High cholesterol diet'] },
+  { key: 'Psychologist', name: 'Psychology', icon: '🧠', short: 'Anxiety, depression, stress, family counselling and child behaviour.',
+    conditions: ['Anxiety and panic attacks', 'Depression and low mood', 'OCD', 'Stress and anger management', 'Family and marriage counselling', 'Child behaviour and learning problems'] },
+  { key: null, name: 'Laboratory', icon: '🔬', short: 'Blood and urine tests under a qualified pathologist.',
+    conditions: ['Blood tests (CBC, sugar, cholesterol, thyroid)', 'Urine and stool tests', 'Liver and kidney function tests', 'Tests ordered by our doctors'] },
+  { key: null, name: 'Pharmacy', icon: '💊', short: 'In-house pharmacy run by a qualified pharmacist (Pharm-D).',
+    conditions: ['Prescription medicines', 'Advice on how to take your medicines', 'Medicines prescribed by our doctors'] }
 ];
 
 async function rpc(fn, args = {}) {
@@ -96,7 +116,7 @@ async function rpc(fn, args = {}) {
   const data = await res.json().catch(() => null);
   if (!res.ok) {
     const msg = data?.message || 'Something went wrong. Please try again.';
-    throw Object.assign(new Error(msg), { status: data?.code === '28000' ? 401 : data?.code === '23505' ? 409 : res.status });
+    throw Object.assign(new Error(msg), { status: data?.code === '28000' ? 401 : data?.code === '23505' ? 409 : res.status, code: data?.code });
   }
   return data;
 }
@@ -150,7 +170,7 @@ function fillSite() {
 // ---------- header / footer ----------
 function renderChrome() {
   const here = location.pathname.split('/').pop() || 'index.html';
-  const nav = [['index.html', 'Home'], ['about.html', 'About'], ['doctors.html', 'Doctors'], ['services.html', 'Services'], ['faq.html', 'FAQs'], ['contact.html', 'Contact'], ['my-booking.html', 'My Booking']];
+  const nav = [['index.html', 'Home'], ['about.html', 'About'], ['team.html', 'Our Team'], ['doctors.html', 'Doctors'], ['services.html', 'Services'], ['faq.html', 'FAQs'], ['contact.html', 'Contact'], ['my-booking.html', 'My Booking']];
   const header = document.getElementById('site-header');
   if (header) header.innerHTML = `
     <a class="skip" href="#main">Skip to content</a>
@@ -177,14 +197,14 @@ function renderChrome() {
   if (footer) footer.innerHTML = `
     <footer class="site"><div class="container">
       <div class="cols">
-        <div><h4>${HOSPITAL.name}</h4><p>Specialist care in endocrinology, child health, internal medicine and psychology for families in Multan.</p>
+        <div><h4>${HOSPITAL.name}</h4><p>Specialists, allied health, laboratory and pharmacy under one roof for families in Multan.</p>
           <p>${HOSPITAL.facebook ? `<a href="${esc(HOSPITAL.facebook)}" target="_blank" rel="noopener">Facebook</a> · ` : ''}<a href="${waLink()}" target="_blank" rel="noopener">WhatsApp</a></p></div>
         <div><h4>Hospital</h4><ul>
-          <li><a href="about.html">About Us</a></li><li><a href="doctors.html">Our Doctors</a></li>
+          <li><a href="about.html">About Us</a></li><li><a href="team.html">Our Team</a></li><li><a href="doctors.html">Our Doctors</a></li>
           <li><a href="services.html">Services</a></li><li><a href="contact.html">Contact</a></li></ul></div>
         <div><h4>Patients</h4><ul>
           <li><a href="book.html">Book Appointment</a></li><li><a href="my-booking.html">Check / Cancel Booking</a></li>
-          <li><a href="my-booking.html#review">Leave a Review</a></li><li><a href="faq.html">FAQs</a></li></ul></div>
+          <li><a href="my-booking.html#review">Leave a Review</a></li><li><a href="faq.html">FAQs</a></li><li><a href="verify.html">Verify a Document</a></li></ul></div>
         <div><h4>Contact</h4><ul>
           <li>${esc(HOSPITAL.address)}</li>
           <li><a href="${tel(HOSPITAL.phone1)}">${esc(HOSPITAL.phone1)}</a></li>

@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Verify a Document | Ali Medical Complex, Multan</title>
+  <meta name="description" content="Check that a salary slip or letter issued by Ali Medical Complex is genuine.">
+  <meta property="og:title" content="Verify a Document | Ali Medical Complex, Multan">
+  <meta property="og:description" content="Check that a salary slip or letter issued by Ali Medical Complex is genuine.">
+  <meta name="theme-color" content="#0b6e74">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles.css">
+  <script src="i18n.js"></script>
+</head>
+<body>
+<div id="site-header"></div>
+<main id="main">
+<div class="page-head"><div class="container"><h1>Verify a Document</h1><p class="muted" style="margin:4px 0 0">Check that a salary slip or letter from Ali Medical Complex is genuine.</p></div></div>
+
+<section>
+  <div class="container" style="max-width:620px">
+    <form id="vf" class="card">
+      <p class="muted">Every salary slip and letter we issue has a <b>verification code</b> printed at the bottom of the page. Enter it below.</p>
+      <div class="field"><label for="code">Verification code</label><input id="code" placeholder="e.g. 7KQ2M9XA" maxlength="20" style="text-transform:uppercase;letter-spacing:2px" required></div>
+      <button class="btn" type="submit" style="width:100%">Verify</button>
+    </form>
+    <div id="out" style="margin-top:20px"></div>
+    <p class="muted small" style="margin-top:20px">If the details shown here do not match the paper document, or no record is found, the document may have been altered or was not issued by us. Please contact us on <a data-site="phone1" href="#"></a>.</p>
+  </div>
+</section>
+</main>
+<div id="site-footer"></div>
+<script src="common.js"></script>
+<script src="docs.js"></script>
+<script>
+const out = document.getElementById('out');
+async function check(code) {
+  out.innerHTML = '<p class="muted">Checking…</p>';
+  try {
+    const r = await rpc('amc_verify', { p_code: code });
+    const ok = r.status === 'issued';
+    out.innerHTML = `<div class="card" style="border-top:5px solid ${ok ? 'var(--success)' : 'var(--danger)'}">
+      <h2 style="color:${ok ? 'var(--success)' : 'var(--danger)'}">${ok ? '✓ Genuine document' : '⚠ This document has been cancelled'}</h2>
+      ${ok ? '' : '<p>This document was issued but later voided by the hospital. It is no longer valid.</p>'}
+      <div class="summary">
+        <div><span class="muted">Document</span><b>${esc(r.type)}</b></div>
+        ${r.ref ? `<div><span class="muted">Reference</span><span>${esc(r.ref)}</span></div>` : ''}
+        ${r.name ? `<div><span class="muted">Issued for</span><b>${esc(r.name)}</b></div>` : ''}
+        ${r.designation ? `<div><span class="muted">Designation</span><span>${esc(r.designation)}</span></div>` : ''}
+        ${r.period ? `<div><span class="muted">Salary period</span><span>${esc(r.period)} (FY ${esc(r.fy)})</span></div>` : ''}
+        ${r.gross != null ? `<div><span class="muted">Gross income</span><span>PKR ${Number(r.gross).toLocaleString()}</span></div>` : ''}
+        ${r.net != null ? `<div><span class="muted">Net income</span><b>PKR ${Number(r.net).toLocaleString()}</b></div>` : ''}
+        <div><span class="muted">Issued on</span><span>${r.issued ? fmtDate(r.issued) : '—'}</span></div>
+      </div>
+      <p class="muted small" style="margin:0">Compare these details with the paper document.</p></div>`;
+  } catch (e) { out.innerHTML = `<div class="alert error">${esc(e.message)}</div>`; }
+}
+document.getElementById('vf').addEventListener('submit', e => { e.preventDefault(); check(document.getElementById('code').value); });
+const c = new URLSearchParams(location.search).get('code');
+if (c) { document.getElementById('code').value = c; check(c); }
+</script>
+</body>
+</html>

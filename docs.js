@@ -1,0 +1,180 @@
+// ===== Documents: letterhead, payslip, letters, organisation chart =====
+// Used by the website (team / letterhead pages) and the staff panel (printing).
+
+const LOGO_SVG = `<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="32" fill="currentColor"/><path d="M27 15h10v12h12v10H37v12H27V37H15V27h12z" fill="#fff"/></svg>`;
+
+function money(n) { return Number(n || 0).toLocaleString('en-PK'); }
+
+// 72415 -> "Seventy-Two Thousand Four Hundred Fifteen Rupees Only"
+function amountInWords(n) {
+  n = Math.round(Number(n) || 0);
+  if (n === 0) return 'Zero Rupees Only';
+  const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+  const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+  const two = x => x < 20 ? ones[x] : tens[Math.floor(x / 10)] + (x % 10 ? '-' + ones[x % 10] : '');
+  const three = x => (x >= 100 ? ones[Math.floor(x / 100)] + ' Hundred' + (x % 100 ? ' ' : '') : '') + (x % 100 ? two(x % 100) : '');
+  const parts = [];
+  [[1e9, 'Billion'], [1e6, 'Million'], [1e3, 'Thousand']].forEach(([v, w]) => { if (n >= v) { parts.push(three(Math.floor(n / v)) + ' ' + w); n %= v; } });
+  if (n) parts.push(three(n));
+  return parts.join(' ') + ' Rupees Only';
+}
+
+const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+function periodLabel(p) { const [y, m] = p.split('-').map(Number); return `${MONTHS[m - 1]} ${y}`; }
+function fyFor(p) { const [y, m] = p.split('-').map(Number); const s = m >= 7 ? y : y - 1; return `${s}-${String(s + 1).slice(2)}`; } // Pakistan FY: July–June
+function longDate(d) { return new Date(String(d).slice(0, 10) + 'T00:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }); }
+
+// ---------- letterhead ----------
+function letterheadHTML(content, opts = {}) {
+  const H = typeof HOSPITAL !== 'undefined' ? HOSPITAL : {};
+  const web = (H.website || '').replace(/^https?:\/\//, '').replace(/\/$/, '');
+  const contacts = [H.phone1, H.phone2, web, H.email, H.address].filter(Boolean);
+  return `<div class="lh-page" data-no-tr>
+    <div class="lh-bar"></div>
+    <div class="lh-watermark">${LOGO_SVG}</div>
+    <header class="lh-head">
+      <div class="lh-brand"><div class="lh-logo">${LOGO_SVG}</div>
+        <div class="lh-name">${esc(H.legal_name || H.name || 'Ali Medical Complex')}<small>Multan · Pakistan</small></div></div>
+      <ul class="lh-contact">${contacts.map(c => `<li>${esc(c)}</li>`).join('')}</ul>
+    </header>
+    <main class="lh-body">${content}</main>
+    <footer class="lh-foot">${opts.footer ? opts.footer : ''}</footer>
+  </div>`;
+}
+function verifyFooter(ref, code) {
+  const H = typeof HOSPITAL !== 'undefined' ? HOSPITAL : {};
+  const url = (H.website || '').replace(/\/?$/, '/') + 'verify.html';
+  return `${ref ? `Ref: <b>${esc(ref)}</b> · ` : ''}Verify this document at <b>${esc(url.replace(/^https?:\/\//, ''))}</b> using code <b>${esc(code || '— (draft) —')}</b>`;
+}
+
+// ---------- payslip ----------
+function payslipHTML(s) {
+  const d = s.data, H = typeof HOSPITAL !== 'undefined' ? HOSPITAL : {};
+  const rows = Math.max(d.earnings.length, d.deductions.length);
+  let body = '';
+  for (let i = 0; i < rows; i++) {
+    const e = d.earnings[i], x = d.deductions[i];
+    body += `<tr><td>${e ? esc(e.name) : ''}</td><td class="num">${e ? money(e.amount) : ''}</td><td>${x ? esc(x.name) : ''}</td><td class="num">${x ? money(x.amount) : ''}</td></tr>`;
+  }
+  const tax = (d.deductions.find(x => /tax/i.test(x.name)) || {}).amount || 0;
+  const pf = (d.deductions.find(x => /provident/i.test(x.name)) || {}).amount || 0;
+  const allow = d.earnings.filter(x => !/^basic/i.test(x.name)).reduce((a, x) => a + Number(x.amount), 0);
+  return letterheadHTML(`
+    <div class="doc-title">SALARY SLIP${s.status === 'void' ? ' <span class="void">VOID</span>' : s.status === 'draft' ? ' <span class="void">DRAFT</span>' : ''}</div>
+    <table class="ps-info">
+      <tr><th>Name</th><td>${esc(d.name)}</td><th>Organisation</th><td>${esc(H.legal_name || 'Ali Medical Complex')}</td></tr>
+      <tr><th>Designation</th><td>${esc(d.designation)}</td><th>Financial Year</th><td>${esc(s.fy)}</td></tr>
+      <tr><th>Employee Code</th><td>${esc(d.emp_code)}</td><th>Salary Period</th><td>${esc(d.period_label)}</td></tr>
+      <tr><th>Department</th><td>${esc(d.department || '—')}</td><th>Date of Joining</th><td>${d.join_date ? longDate(d.join_date) : '—'}</td></tr>
+      <tr><th>Bank A/C</th><td>${esc(d.bank_account || '—')}</td><th>Days (working / attended / leave)</th><td>${d.working_days ?? '—'} / ${d.days_attended ?? '—'} / ${d.leaves ?? 0}</td></tr>
+    </table>
+    <table class="ps-table">
+      <thead><tr><th colspan="2">Income</th><th colspan="2">Deductions</th></tr>
+        <tr><th>Particulars</th><th class="num">Amount (PKR)</th><th>Particulars</th><th class="num">Amount (PKR)</th></tr></thead>
+      <tbody>${body}</tbody>
+      <tfoot><tr><th>Gross Income</th><th class="num">${money(d.gross)}</th><th>Total Deductions</th><th class="num">${money(d.total_deductions)}</th></tr></tfoot>
+    </table>
+    <table class="ps-summary">
+      <tr><th>Gross Income</th><td class="num">${money(d.gross)}</td></tr>
+      <tr><th>Allowances (included in gross)</th><td class="num">${money(allow)}</td></tr>
+      <tr><th>Withholding Tax</th><td class="num">${money(tax)}</td></tr>
+      <tr><th>Provident Fund Contribution</th><td class="num">${money(pf)}</td></tr>
+      <tr class="net"><th>Net Income</th><td class="num">PKR ${money(d.net)}</td></tr>
+    </table>
+    <p class="words"><b>Amount in words:</b> ${amountInWords(d.net)}</p>
+    ${d.remarks ? `<p><b>Remarks:</b> ${esc(d.remarks)}</p>` : ''}
+    <div class="sign-row"><div><div class="sign-line"></div>Prepared by (Accounts)</div><div><div class="sign-line"></div>${esc(H.signatory_name || '')}<br>${esc(H.signatory_title || 'Authorised Signatory')}</div></div>
+    <p class="fine">System generated document${s.issued_at ? ', issued ' + longDate(s.issued_at) : ''}. All amounts are in Pakistani Rupees (PKR). Errors &amp; omissions excepted.</p>
+  `, { footer: verifyFooter(null, s.verify_code) });
+}
+
+// ---------- letters ----------
+const nl2p = t => esc(t || '').split(/\n{2,}/).map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('');
+
+function signatureBlock(d) {
+  return `<div class="sig">
+    <p>${esc(d.closing || 'Yours faithfully,')}</p>
+    <div class="sign-line" style="margin-top:46px"></div>
+    <b>${esc(d.sign_name || '')}</b><br>${esc(d.sign_title || '')}<br>${esc(d.employer || '')}
+    ${d.sign_phone ? `<br>Telephone: ${esc(d.sign_phone)}` : ''}${d.sign_email ? `<br>Email: ${esc(d.sign_email)}` : ''}
+  </div>`;
+}
+
+function generalLetterHTML(d, ref, code, status) {
+  return letterheadHTML(`
+    ${status === 'void' ? '<div class="doc-title"><span class="void">VOID</span></div>' : ''}
+    <div class="ltr-top"><div>${d.to_name || d.to_lines ? `To<br><b>${esc(d.to_name || '')}</b><br>${esc(d.to_lines || '').replace(/\n/g, '<br>')}` : ''}</div>
+      <div class="ltr-date">${ref ? `Ref: ${esc(ref)}<br>` : ''}<b>${longDate(d.date)}</b></div></div>
+    ${d.subject ? `<p class="subj">Subject: ${esc(d.subject)}</p>` : ''}
+    ${d.salutation ? `<p>${esc(d.salutation)}</p>` : ''}
+    ${nl2p(d.body)}
+    ${signatureBlock(d)}
+  `, { footer: verifyFooter(ref, code) });
+}
+
+function referenceLetterHTML(d, ref, code, status) {
+  const duties = (d.duties || '').split('\n').map(x => x.trim()).filter(Boolean);
+  return letterheadHTML(`
+    ${status === 'void' ? '<div class="doc-title"><span class="void">VOID</span></div>' : ''}
+    <div class="ltr-top"><div>To Whom It May Concern</div><div class="ltr-date">${ref ? `Ref: ${esc(ref)}<br>` : ''}<b>${longDate(d.date)}</b></div></div>
+    <p class="subj">Re: Employment Verification for ${esc(d.employee_name)}</p>
+    <p>This letter confirms that ${esc(d.employee_name)}${d.cnic ? `, holder of CNIC/Passport No. ${esc(d.cnic)},` : ''} ${d.end_date ? 'was' : 'is'} employed by ${esc(d.employer)} as ${esc(d.title)} from ${longDate(d.start_date)} to ${d.end_date ? longDate(d.end_date) : 'the present'}.
+      The employment ${d.end_date ? 'was' : 'is'} ${esc(d.emp_type.toLowerCase())}, averaging ${esc(d.hours)} hours per week${d.salary ? `, and the employee ${d.end_date ? 'received' : 'receives'} a gross salary of PKR ${money(d.salary)} per ${esc(d.salary_per || 'month')}` : ''}.</p>
+    <h4>Employment Details</h4>
+    <table class="kv">
+      <tr><th>Employer</th><td>${esc(d.employer)}</td></tr>
+      <tr><th>Business address</th><td>${esc(d.address)}</td></tr>
+      <tr><th>Employee</th><td>${esc(d.employee_name)}</td></tr>
+      <tr><th>Official position title</th><td>${esc(d.title)}</td></tr>
+      <tr><th>Employment period</th><td>${longDate(d.start_date)} to ${d.end_date ? longDate(d.end_date) : 'Present'}</td></tr>
+      <tr><th>Hours and employment type</th><td>${esc(d.emp_type)}, ${esc(d.hours)} hours per week</td></tr>
+      ${d.salary ? `<tr><th>Gross remuneration</th><td>PKR ${money(d.salary)} per ${esc(d.salary_per || 'month')}</td></tr>` : ''}
+      ${d.supervisor ? `<tr><th>Immediate supervisor</th><td>${esc(d.supervisor)}</td></tr>` : ''}
+      <tr><th>Referee</th><td>${esc([d.sign_name, d.sign_title, d.sign_phone, d.sign_email].filter(Boolean).join(', '))}</td></tr>
+    </table>
+    ${duties.length ? `<h4>Primary Duties and Responsibilities</h4><p>Throughout the above employment, ${esc(d.employee_name)} performed the following duties:</p>
+      <ul class="duties">${duties.map(x => `<li>${esc(x.replace(/^[-•*]\s*/, ''))}</li>`).join('')}</ul>` : ''}
+    ${d.supervisor || d.manages ? `<h4>Reporting and Organisational Structure</h4>
+      <p>${d.supervisor ? `${esc(d.employee_name)} reported to ${esc(d.supervisor)}.` : ''}
+      ${d.manages ? ` The employee managed or coordinated the following positions/functions: ${esc(d.manages)}.` : ''}
+      ${d.clinical_lead ? ` ${esc(d.clinical_lead)} retained responsibility for clinical governance and professional clinical supervision.` : ''}
+      ${d.attach_chart ? ' An organisation chart confirming these relationships is attached to this letter.' : ''}</p>` : ''}
+    <h4>Confirmation</h4>
+    <p>I confirm that the information in this letter is true and correct and is based on the employer's employment, payroll and operational records.
+      ${duties.length ? `${esc(d.employee_name)} performed the duties described above during the stated period of employment.` : ''}</p>
+    <p>Should further information be required, please contact me using the details below.</p>
+    ${signatureBlock(d)}
+  `, { footer: verifyFooter(ref, code) });
+}
+
+// ---------- organisation chart ----------
+const GRP_LABEL = { leadership: 'Management', clinical: 'Clinical Services', allied: 'Allied Health', nursing: 'Nursing', admin: 'Administration & Finance', support: 'Support Services', group: '', staff: '' };
+
+function orgTree(list) {
+  const by = {}; list.forEach(p => (by[p.parent_id ?? 'root'] = by[p.parent_id ?? 'root'] || []).push(p));
+  const ids = new Set(list.map(p => p.id));
+  // anyone whose manager is hidden is shown at top level
+  const roots = list.filter(p => p.parent_id == null || !ids.has(p.parent_id));
+  const kids = p => (by[p.id] || []).sort((a, b) => a.sort_order - b.sort_order || a.id - b.id);
+  return { roots, kids };
+}
+function personCard(p, cls = '') {
+  if (p.grp === 'group') return `<div class="oc-card oc-group ${cls}"><b>${esc(p.name)}</b></div>`;
+  return `<div class="oc-card oc-${esc(p.grp)} ${cls}"><b>${esc(p.name)}</b>${p.role ? `<span>${esc(p.role)}</span>` : ''}${p.qualification ? `<small>${esc(p.qualification)}</small>` : ''}</div>`;
+}
+function orgChartHTML(list) {
+  if (!list.length) return '<p class="muted">No team members to show yet.</p>';
+  const { roots, kids } = orgTree(list);
+  const nested = p => { const k = kids(p); return k.length ? `<ul class="oc-list">${k.map(c => `<li>${personCard(c, 'sm')}${nested(c)}</li>`).join('')}</ul>` : ''; };
+  let html = '<div class="oc">';
+  roots.forEach(r => {
+    let node = r;
+    // vertical chain while each level has a single person (e.g. Director → Manager)
+    html += `<div class="oc-chain">${personCard(node, 'lg')}`;
+    while (kids(node).length === 1 && kids(kids(node)[0]).length) { node = kids(node)[0]; html += `<div class="oc-arrow"></div>${personCard(node, 'lg')}`; }
+    const k = kids(node);
+    html += '</div>';
+    if (k.length) html += `<div class="oc-arrow"></div><div class="oc-grid">${k.map(c => `<div class="oc-dept">${personCard(c, 'head')}${nested(c)}</div>`).join('')}</div>`;
+  });
+  return html + '</div>';
+}

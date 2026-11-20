@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Letterhead | Ali Medical Complex, Multan</title>
+  <meta name="description" content="Printable letterhead of Ali Medical Complex.">
+  <meta property="og:title" content="Letterhead | Ali Medical Complex, Multan">
+  <meta property="og:description" content="Printable letterhead of Ali Medical Complex.">
+  <meta name="theme-color" content="#0b6e74">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles.css">
+  <script src="i18n.js"></script>
+  <meta name="robots" content="noindex">
+</head>
+<body>
+<div id="site-header"></div>
+<main id="main">
+<div class="page-head"><div class="container"><h1>Hospital Letterhead</h1><p class="muted" style="margin:4px 0 0">Print on A4, or save as PDF (choose “Save as PDF” in the print window).</p></div></div>
+
+<section>
+  <div class="container">
+    <p class="center no-print"><button class="btn" id="print">🖨️ Print / Save as PDF</button></p>
+    <div class="doc-scroll" id="preview"></div>
+  </div>
+</section>
+<div id="print-area"></div>
+</main>
+<div id="site-footer"></div>
+<script src="common.js"></script>
+<script src="docs.js"></script>
+<script>
+function draw() {
+  const html = letterheadHTML('<div style="min-height:200mm"></div>');
+  document.getElementById('preview').innerHTML = html;
+  document.getElementById('print-area').innerHTML = html;
+}
+draw(); loadSite().then(draw);
+document.getElementById('print').onclick = () => { document.body.classList.add('print-doc'); window.print(); document.body.classList.remove('print-doc'); };
+</script>
+</body>
+</html>

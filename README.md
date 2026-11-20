@@ -12,6 +12,9 @@ Runs completely free: the pages are hosted on GitHub Pages and bookings are stor
 |---|---|
 | `index.html` | Home: quick actions, specialties, doctors, why us, patient reviews |
 | `about.html` | About the hospital, values, facilities |
+| `team.html` | Organisation chart (edited in the staff panel) |
+| `verify.html` | Anyone can check a payslip or letter is genuine using its verification code |
+| `letterhead.html` | Blank printable A4 letterhead (print or save as PDF) |
 | `doctors.html` | All doctors with search, specialty filter and "available today" |
 | `doctor.html?id=N` | Doctor profile: qualifications, weekly timetable, leave dates, reviews, book/call/share |
 | `services.html` | Each specialty, conditions treated and its doctors |
@@ -29,6 +32,14 @@ Runs completely free: the pages are hosted on GitHub Pages and bookings are stor
 - **Enquiries:** messages from the contact form; reply on WhatsApp; mark read/replied; delete.
 - **Reviews:** approve or hide patient reviews before they show on the site.
 - **Settings:** announcement banner, phone numbers, WhatsApp number, email, Facebook, OPD text; booking alerts; change password.
+
+## Payroll, payslips and letters (staff panel, separate payroll password)
+- **Org Chart tab:** add, edit, move or hide people; who reports to whom. Shown on the website and used in reference letters.
+- **Payroll → Employees:** employee code, designation, department, CNIC, joining/leaving date, bank account, basic salary, allowances, Provident Fund %, tax (from slabs, fixed, or none).
+- **Payroll → Payslips:** pick a month, create drafts for all employees, edit lines (overtime, deductions, leave days), then **Issue**. Issued payslips are locked and get a verification code; correct mistakes by **Void** and creating a new one. Export CSV for the bank, print one or all.
+- Each payslip shows: name, designation, organisation, financial year (July–June), salary period, gross income, allowances, withholding tax, Provident Fund contribution, net income and amount in words.
+- **Payroll → Tax & PF settings:** yearly tax slabs (pre-filled with 2025-26 salaried rates; **check against the current Finance Act each July**), default PF %, change payroll password.
+- **Letters:** general letters and employment reference letters on the letterhead, with reference numbers (AMC/YYYY/NNNN) and verification codes; reference letters fill in from employee records and the org chart, and can attach the org chart. Issued letters are kept in a register and can be voided.
 
 ## Urdu version
 Every public page has an **English / اردو** button (top right). Urdu switches the layout to right-to-left with an Urdu (Nastaliq) font and remembers the choice on that device. Translations live in `i18n.js`: to change a wording, edit the Urdu text next to its English sentence. Doctor names, qualifications and bios entered in the staff panel are shown as typed. The staff panel stays in English.
