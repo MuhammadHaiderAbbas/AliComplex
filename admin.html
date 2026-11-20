@@ -6,6 +6,7 @@
   <meta name="robots" content="noindex">
   <title>Staff Panel | Ali Medical Complex</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preload" as="image" href="brand/logo-horizontal.svg">
   <link rel="stylesheet" href="styles.css">
   <style>
     body { background: var(--bg-soft); }
@@ -47,7 +48,7 @@
 </head>
 <body>
 <div class="admin-bar"><div class="container">
-  <b>Ali Medical Complex · Staff Panel</b>
+  <b style="display:flex;align-items:center;gap:10px"><img src="brand/logo-mark-white.svg" alt="" width="30" height="30">Ali Medical Complex · Staff Panel</b>
   <span><a href="index.html" target="_blank">View site ↗</a> <button id="logout" class="btn small outline hidden" style="margin-left:12px">Log out</button></span>
 </div></div>
 
@@ -430,6 +431,9 @@
             <div class="field"><label>Signatory position</label><input name="signatory_title"></div>
           </div>
           <p class="small"><a href="letterhead.html" target="_blank">View / print blank letterhead ↗</a></p>
+          <p class="small"><b>Logo files:</b> <a href="brand/logo-horizontal.svg" download>Horizontal (SVG)</a> · <a href="brand/logo-horizontal.png" download>Horizontal (PNG)</a> ·
+            <a href="brand/logo-stacked.svg" download>Stacked (SVG)</a> · <a href="brand/logo-stacked.png" download>Stacked (PNG)</a> · <a href="brand/logo-mark.svg" download>Icon only</a> ·
+            <a href="brand/logo-horizontal-white.svg" download>White version</a> · <a href="icon-512.png" download>App icon</a></p>
           <button class="btn" type="submit">Save settings</button>
         </form>
         <form id="pw-form" class="card">

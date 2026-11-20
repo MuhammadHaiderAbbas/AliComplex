@@ -1,7 +1,7 @@
 // ===== Documents: letterhead, payslip, letters, organisation chart =====
 // Used by the website (team / letterhead pages) and the staff panel (printing).
 
-const LOGO_SVG = `<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="32" fill="currentColor"/><path d="M27 15h10v12h12v10H37v12H27V37H15V27h12z" fill="#fff"/></svg>`;
+const LOGO_SVG = `<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M50 4C63 12 77 14.5 90 14.5V46C90 72 73 88.5 50 96C27 88.5 10 72 10 46V14.5C23 14.5 37 12 50 4Z" fill="currentColor"/><rect x="40" y="24" width="20" height="54" rx="5" fill="#fff"/><rect x="23" y="41" width="54" height="20" rx="5" fill="#fff"/><path d="M15 51H33.5L39 41.5L46 61.5L52.5 43.5L57 51H85" fill="none" stroke="#e8a33d" stroke-width="4.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
 function money(n) { return Number(n || 0).toLocaleString('en-PK'); }
 
@@ -31,10 +31,10 @@ function letterheadHTML(content, opts = {}) {
   const contacts = [H.phone1, H.phone2, web, H.email, H.address].filter(Boolean);
   return `<div class="lh-page" data-no-tr>
     <div class="lh-bar"></div>
-    <div class="lh-watermark">${LOGO_SVG}</div>
+    <div class="lh-watermark">${LOGO_SVG.replace(/<path d="M15 51[^>]*>/, '')}</div>
     <header class="lh-head">
-      <div class="lh-brand"><div class="lh-logo">${LOGO_SVG}</div>
-        <div class="lh-name">${esc(H.legal_name || H.name || 'Ali Medical Complex')}<small>Multan · Pakistan</small></div></div>
+      <div class="lh-brand"><img class="lh-lockup" src="brand/logo-horizontal.svg" alt="${esc(H.legal_name || 'Ali Medical Complex')}">
+        ${H.legal_name && H.legal_name !== 'Ali Medical Complex' ? `<div class="lh-name">${esc(H.legal_name)}</div>` : ''}</div>
       <ul class="lh-contact">${contacts.map(c => `<li>${esc(c)}</li>`).join('')}</ul>
     </header>
     <main class="lh-body">${content}</main>

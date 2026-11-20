@@ -252,7 +252,7 @@ function renderChrome() {
       <span>📞 <a href="${tel(HOSPITAL.phone1)}">${esc(HOSPITAL.phone1)}</a>${HOSPITAL.phone2 ? `<span class="hide-sm"> · <a href="${tel(HOSPITAL.phone2)}">${esc(HOSPITAL.phone2)}</a></span>` : ''}</span>
     </div></div>
     <header class="site"><div class="container">
-      <a class="brand" href="index.html"><span class="logo-mark">${icon('hospital')}</span><span>${HOSPITAL.name}<small>Suraj Miani Road, Multan</small></span></a>
+      <a class="brand" href="index.html"><img class="logo-svg" src="brand/logo-mark.svg" alt="" width="44" height="44"><span>${HOSPITAL.name}<small>Suraj Miani Road, Multan</small></span></a>
       <div class="head-right">
         <button type="button" class="lang-btn" data-no-tr onclick="setLang(typeof LANG !== 'undefined' && LANG === 'ur' ? 'en' : 'ur')" aria-label="${typeof LANG !== 'undefined' && LANG === 'ur' ? 'Switch to English' : 'اردو میں دیکھیں'}">${typeof LANG !== 'undefined' && LANG === 'ur' ? 'English' : 'اردو'}</button>
         <button class="menu-btn" aria-label="Open menu" aria-expanded="false">☰</button>
@@ -269,7 +269,7 @@ function renderChrome() {
   if (footer) footer.innerHTML = `
     <footer class="site"><div class="container">
       <div class="cols">
-        <div><h4 class="foot-brand"><span class="logo-mark sm">${icon('hospital')}</span>${HOSPITAL.name}</h4><p>Specialists, allied health, laboratory and pharmacy under one roof for families in Multan.</p>
+        <div><h4 class="foot-brand"><img class="logo-svg sm" src="brand/logo-mark-white.svg" alt="" width="34" height="34">${HOSPITAL.name}</h4><p>Specialists, allied health, laboratory and pharmacy under one roof for families in Multan.</p>
           <p>${HOSPITAL.facebook ? `<a href="${esc(HOSPITAL.facebook)}" target="_blank" rel="noopener">Facebook</a> · ` : ''}<a href="${waLink()}" target="_blank" rel="noopener">WhatsApp</a></p></div>
         <div><h4>Hospital</h4><ul>
           <li><a href="about.html">About Us</a></li><li><a href="team.html">Our Team</a></li><li><a href="doctors.html">Our Doctors</a></li>
