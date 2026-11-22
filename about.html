@@ -99,7 +99,7 @@
 document.getElementById('about-art').innerHTML = ART.care;
 rpc('amc_team').then(t => {
   const counts = {};
-  t.filter(p => p.grp !== 'group').forEach(p => counts[p.grp] = (counts[p.grp] || 0) + 1);
+  t.filter(isPerson).forEach(p => counts[p.grp] = (counts[p.grp] || 0) + 1);
   barChart(document.getElementById('dept-chart'), Object.entries(counts).sort((a, b) => b[1] - a[1])
     .map(([k, v]) => ({ label: GRP_LABEL[k] || k, value: v, tip: `${GRP_LABEL[k] || k}: ${v} people` })), { unit: 'people', caption: 'Department' });
 }).catch(() => {});

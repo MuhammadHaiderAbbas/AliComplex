@@ -592,3 +592,92 @@ html[dir=rtl] .doc-option { text-align: right; }
 .logo-svg { height: 46px; width: auto; filter: drop-shadow(0 4px 8px rgba(18,87,184,.22)); }
 .logo-svg.sm { height: 36px; width: auto; }
 .lh-lockup { width: 82mm; }
+
+/* ===== Org chart as a connected tree (v6) ===== */
+.tree-fit { width: 100%; overflow: hidden; }
+.tree { --L: #0d2b5c; width: max-content; margin: 0 auto; padding: 6px 4px 10px; }
+.tree .oc-card { min-width: 150px; max-width: 230px; position: relative; z-index: 1; }
+.tree .oc-card.lg { min-width: 300px; max-width: none; }
+.tree .oc-card.sm { min-width: 112px; max-width: 150px; padding: 6px 9px; }
+.tree .oc-card.sm b { font-size: .86rem; } .tree .oc-card.sm span { font-size: .74rem; }
+.t-node { display: flex; flex-direction: column; align-items: center; position: relative; }
+.t-stem { width: 2px; height: 16px; background: var(--L); }
+.t-label { font-size: .75rem; font-weight: 700; color: var(--ink-2); background: #fff; padding: 0 6px; margin: -4px 0 0; position: relative; z-index: 1; }
+.t-label + .t-row, .t-label + .t-col { margin-top: 2px; }
+/* row: horizontal bus, arrows down */
+.t-row { display: flex; align-items: flex-start; justify-content: center; }
+.t-cell { position: relative; padding: 14px 8px 0; display: flex; flex-direction: column; align-items: center; }
+.t-cell::before { content: ""; position: absolute; top: 0; left: 0; right: 0; border-top: 2px solid var(--L); }
+.t-cell:first-child::before { left: 50%; } .t-cell:last-child::before { right: 50%; }
+.t-row.one > .t-cell::before { display: none; }
+.t-cell::after { content: ""; position: absolute; top: 0; left: calc(50% - 1px); width: 2px; height: 14px; background: var(--L); }
+.t-cell > .t-node:not(.junction)::before { content: ""; border: 6px solid transparent; border-top: 8px solid var(--L); border-bottom: 0; margin-top: -1px; }
+/* connector column inside a row: line comes down onto the bracket */
+.t-cell.jcol { align-items: flex-start; }
+.t-cell.jcol::after { left: 8px; }
+.t-cell.jcol:last-child::before { right: calc(100% - 10px); }
+.t-cell.jcol:first-child::before { left: 8px; }
+.t-cell.jcol > .t-node > .t-col { margin-left: 0; }
+.t-cell.jn > .t-node > .t-row { margin-top: 0; }
+/* column: bracket line on the left, arrows right */
+.t-node.lay-column { align-items: flex-start; }
+.t-node.lay-column > .oc-card { width: 100%; }
+.t-node.lay-column > .t-stem { margin-left: 22px; height: 10px; }
+.t-col { display: flex; flex-direction: column; margin-left: 22px; }
+.t-item { position: relative; padding: 5px 0 5px 24px; }
+.t-item::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; border-left: 2px solid var(--L); }
+.t-item:last-child::before { bottom: auto; height: 28px; }
+.t-item::after { content: ""; position: absolute; left: 0; top: 27px; width: 18px; border-top: 2px solid var(--L); }
+.t-item > .t-node::before { content: ""; position: absolute; left: -8px; top: 16px; border: 6px solid transparent; border-left: 8px solid var(--L); border-right: 0; z-index: 2; }
+.t-item > .t-node.lay-row, .t-item > .t-node.lay-column { align-items: flex-start; }
+.t-item > .t-node.lay-row > .t-stem { margin-left: 40px; }
+.t-item > .t-node.lay-row > .t-label { margin-left: 8px; }
+.t-item > .t-node.lay-row > .t-row { justify-content: flex-start; }
+.t-item > .t-node.lay-row > .t-row > .t-cell:first-child::before { left: 41px; }
+.t-item > .t-node.lay-row > .t-row > .t-cell:first-child::after { left: 40px; }
+.t-item > .t-node.lay-row > .t-row > .t-cell:first-child { align-items: flex-start; padding-left: 8px; }
+.t-item > .t-node.lay-row > .t-row > .t-cell:first-child > .t-node::before { margin-left: 26px; }
+/* stack */
+.t-stack { display: flex; flex-direction: column; gap: 12px; }
+.tree-list { display: none; }
+.oc-root { margin: 0; padding: 0; border: 0; }
+.oc-root > li::before { display: none; }
+@media (max-width: 760px) { .tree-fit { display: none; } .tree-list { display: block; } }
+/* printed chart page */
+.chart-page .tree-list { display: none !important; }
+.chart-page .tree-fit { display: block !important; }
+.chart-page .tree .oc-card { box-shadow: none; }
+.chart-sign { display: flex; justify-content: flex-start; margin-top: 10mm; font-size: 9.5pt; }
+.chart-sign div { text-align: center; }
+.chart-sign .sign-line { width: 55mm; }
+@media print { .chart-page .tree-fit { overflow: visible; } }
+/* v6 fixes: left-align list items, fixed-width heads of lists so arrows land on them */
+.t-item > .t-node { align-items: flex-start; }
+.tree .t-node.lay-column > .oc-card { width: 220px; min-width: 220px; max-width: 220px; }
+.tree .t-node.lay-column > .oc-card.lg { width: 300px; min-width: 300px; max-width: 300px; }
+.t-cell.lcol { align-items: flex-start; }
+.t-cell.lcol::after { left: 117px; }
+.t-cell.lcol > .t-node::before { margin-left: 112px; }
+.t-cell.lcol:first-child::before { left: 118px; }
+.t-cell.lcol:last-child::before { right: calc(100% - 118px); }
+.tree .oc-card.sm { max-width: 210px; }
+.tree .oc-card b { white-space: nowrap; }
+.tree .oc-card.sm span, .tree .oc-card.head span { white-space: nowrap; }
+.tree .oc-card.head span, .tree .oc-card.lg span { white-space: normal; }
+.tree .t-node.lay-column > .oc-card.head { width: 236px; min-width: 236px; max-width: 236px; }
+.tree .t-node.lay-row > .oc-card.head, .tree .t-node.lay-row > .oc-card.sm { max-width: 230px; }
+.t-cell.lcol::after { left: 125px; } .t-cell.lcol > .t-node::before { margin-left: 120px; }
+.t-cell.lcol:first-child::before { left: 126px; } .t-cell.lcol:last-child::before { right: calc(100% - 126px); }
+/* chart attachment prints on a landscape A4 page */
+@page landscape { size: A4 landscape; margin: 0; }
+.lh-page.chart-page { width: 297mm; min-height: 210mm; page: landscape; padding: 10mm 12mm 18mm 20mm; }
+.chart-page .lh-head { margin-bottom: 2mm; }
+.chart-page .lh-lockup { width: 60mm; }
+.chart-page .lh-contact { font-size: 8.5pt; }
+.chart-page .doc-title { font-size: 13pt; margin-bottom: 3mm; }
+.chart-page .chart-sign { margin-top: 4mm; }
+.chart-page .fine { margin-top: 2mm; }
+.chart-page .lh-watermark { width: 80mm; }
+.chart-page .tree .oc-card { padding: 6px 10px; }
+.chart-page .tree .oc-card b { font-size: .9rem; } .chart-page .tree .oc-card span { font-size: .74rem; } .chart-page .tree .oc-card small { font-size: .7rem; display: block; }
+.chart-page .tree .oc-card.lg b { font-size: 1.05rem; } .chart-page .tree .oc-card.lg span { font-size: .82rem; }

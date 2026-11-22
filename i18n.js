@@ -356,6 +356,7 @@ const UR = {
   "Our Team ": "ہماری ٹیم",
   "Verify a Document ": "دستاویز کی تصدیق",
   // v5 design
+  "Nursing Staff": "نرسنگ اسٹاف",
   "Allied health": "الائیڈ ہیلتھ",
   "Expert care for your family,": "آپ کے خاندان کے لیے ماہرانہ علاج،",
   "all under one roof": "سب ایک ہی چھت تلے",

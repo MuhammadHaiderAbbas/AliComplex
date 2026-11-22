@@ -25,10 +25,10 @@
 <div class="page-head"><div class="container"><h1>Our Team</h1><p class="muted" style="margin:4px 0 0">The people who run Ali Medical Complex and care for our patients.</p></div></div>
 
 <section>
-  <div class="container">
+  <div class="container" style="max-width:1480px">
     <div class="grid cols-4" id="team-stats" style="margin-bottom:30px"></div>
     <div class="oc-legend" id="legend"></div>
-    <div id="chart"><p class="muted center">Loading…</p></div>
+    <div id="chart" class="card" style="padding:24px 16px"><p class="muted center">Loading…</p></div>
   </div>
 </section>
 <div class="cta"><div class="container">
@@ -44,7 +44,8 @@ document.getElementById('legend').innerHTML = Object.entries(GRP_LABEL).filter((
   .map(([k, v]) => `<span><i style="background:${{ leadership: '#2a78d6', clinical: '#eb6834', allied: '#1baf7a', nursing: '#eda100', admin: '#e87ba4', support: '#008300' }[k]}"></i>${v}</span>`).join('');
 rpc('amc_team').then(list => {
   document.getElementById('chart').innerHTML = orgChartHTML(list, { avatars: true });
-  const people = list.filter(p => p.grp !== 'group'), c = g => people.filter(p => p.grp === g).length;
+  fitOrgChart(); setTimeout(fitOrgChart, 400);
+  const people = list.filter(isPerson), c = g => people.filter(p => p.grp === g).length;
   document.getElementById('team-stats').innerHTML = [['users', people.length, 'Team members'], ['stethoscope', c('clinical'), 'Specialist doctors'],
     ['activity', c('allied'), 'Allied health'], ['shield', c('nursing'), 'Nursing staff']]
     .map(([i, n, l]) => `<div class="stat reveal"><div class="ico-badge">${icon(i)}</div><div class="n">${n}</div><div class="muted">${l}</div></div>`).join('');

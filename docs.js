@@ -148,36 +148,77 @@ function referenceLetterHTML(d, ref, code, status) {
 }
 
 // ---------- organisation chart ----------
-const GRP_LABEL = { leadership: 'Management', clinical: 'Clinical Services', allied: 'Allied Health', nursing: 'Nursing', admin: 'Administration & Finance', support: 'Support Services', group: '', staff: '' };
+// Drawn as a real tree with connector lines and arrows. Each person has a layout for the people under them:
+//   row    – side by side under a horizontal line (arrows down)
+//   column – a list under them with a bracket line (arrows right)
+//   stack  – blocks placed one below the other (used by connectors)
+// "junction" entries are connectors only: they draw lines but no box.
+const GRP_LABEL = { leadership: 'Management', clinical: 'Clinical Services', allied: 'Allied Health', nursing: 'Nursing', admin: 'Administration & Finance', support: 'Support Services', group: '', junction: '', staff: '' };
+const isPerson = p => p && p.grp !== 'group' && p.grp !== 'junction';
 
 function orgTree(list) {
   const by = {}; list.forEach(p => (by[p.parent_id ?? 'root'] = by[p.parent_id ?? 'root'] || []).push(p));
   const ids = new Set(list.map(p => p.id));
-  // anyone whose manager is hidden is shown at top level
   const roots = list.filter(p => p.parent_id == null || !ids.has(p.parent_id));
   const kids = p => (by[p.id] || []).sort((a, b) => a.sort_order - b.sort_order || a.id - b.id);
   return { roots, kids };
 }
 let OC_AVATARS = false;
 function personCard(p, cls = '') {
+  if (p.grp === 'junction') return '';
   if (p.grp === 'group') return `<div class="oc-card oc-group ${cls}"><b>${esc(p.name)}</b></div>`;
   const av = OC_AVATARS && typeof avatarHTML === 'function';
   return `<div class="oc-card oc-${esc(p.grp)} ${cls} ${av ? 'has-av' : ''}">${av ? avatarHTML(p, 'oc-av') : ''}<b>${esc(p.name)}</b>${p.role ? `<span>${esc(p.role)}</span>` : ''}${p.qualification ? `<small>${esc(p.qualification)}</small>` : ''}</div>`;
+}
+function ocNode(p, kids, depth = 0) {
+  const ch = kids(p), junction = p.grp === 'junction';
+  const lay = p.layout || 'column';
+  const box = personCard(p, depth < 2 ? 'lg' : (ch.length ? 'head' : 'sm'));
+  if (!ch.length) return `<div class="t-node">${box}</div>`;
+  const label = p.child_label ? `<div class="t-label">${esc(p.child_label)}</div>` : '';
+  let inner;
+  if (lay === 'row') inner = `<div class="t-row ${ch.length === 1 ? 'one' : ''}">${ch.map(c => `<div class="t-cell ${c.grp === 'junction' ? 'jn' : ''} ${c.grp === 'junction' && (c.layout || 'column') === 'column' ? 'jcol' : ''} ${c.grp !== 'junction' && (c.layout || 'column') === 'column' && kids(c).length ? 'lcol' : ''}">${ocNode(c, kids, depth + 1)}</div>`).join('')}</div>`;
+  else if (lay === 'stack') inner = `<div class="t-stack">${ch.map(c => `<div class="t-block">${ocNode(c, kids, depth + 1)}</div>`).join('')}</div>`;
+  else inner = `<div class="t-col">${ch.map(c => `<div class="t-item">${ocNode(c, kids, depth + 1)}</div>`).join('')}</div>`;
+  return `<div class="t-node lay-${lay} ${junction ? 'junction' : ''}">${box}${junction ? '' : '<div class="t-stem"></div>'}${label}${inner}</div>`;
+}
+// Simple indented list (used on small phone screens)
+function orgListHTML(list) {
+  const { roots, kids } = orgTree(list);
+  const li = p => { const ch = kids(p);
+    const sub = ch.length ? `<ul class="oc-list">${ch.map(li).join('')}</ul>` : '';
+    return p.grp === 'junction' ? ch.map(li).join('') : `<li>${personCard(p, 'sm')}${sub}</li>`; };
+  return `<ul class="oc-list oc-root">${roots.map(li).join('')}</ul>`;
 }
 function orgChartHTML(list, opts = {}) {
   OC_AVATARS = !!opts.avatars;
   if (!list.length) return '<p class="muted">No team members to show yet.</p>';
   const { roots, kids } = orgTree(list);
-  const nested = p => { const k = kids(p); return k.length ? `<ul class="oc-list">${k.map(c => `<li>${personCard(c, 'sm')}${nested(c)}</li>`).join('')}</ul>` : ''; };
-  let html = '<div class="oc">';
-  roots.forEach(r => {
-    let node = r;
-    // vertical chain while each level has a single person (e.g. Director → Manager)
-    html += `<div class="oc-chain">${personCard(node, 'lg')}`;
-    while (kids(node).length === 1 && kids(kids(node)[0]).length) { node = kids(node)[0]; html += `<div class="oc-arrow"></div>${personCard(node, 'lg')}`; }
-    const k = kids(node);
-    html += '</div>';
-    if (k.length) html += `<div class="oc-arrow"></div><div class="oc-grid">${k.map(c => `<div class="oc-dept">${personCard(c, 'head')}${nested(c)}</div>`).join('')}</div>`;
+  return `<div class="tree-fit"><div class="tree">${roots.map(r => ocNode(r, kids)).join('')}</div></div>
+    ${opts.list === false ? '' : `<div class="tree-list">${orgListHTML(list)}</div>`}`;
+}
+// Shrink a drawn chart so it fits its container width
+function fitOrgChart(root = document) {
+  root.querySelectorAll('.tree-fit').forEach(w => {
+    const t = w.firstElementChild; if (!t) return;
+    t.style.zoom = 1;
+    const need = t.scrollWidth, have = w.clientWidth;
+    let z = need > have ? have / need : 1;
+    const maxH = Number(w.dataset.maxh || 0);
+    if (maxH && t.scrollHeight * z > maxH) z = maxH / t.scrollHeight;
+    t.style.zoom = z.toFixed(3);
   });
-  return html + '</div>';
+}
+window.addEventListener('resize', () => fitOrgChart());
+// People a person manages: their own reports, looking through connectors and team headings
+function directReports(team, id) {
+  const out = [];
+  const walk = pid => team.filter(t => t.parent_id === pid).sort((a, b) => a.sort_order - b.sort_order).forEach(t => t.grp === 'junction' ? walk(t.id) : out.push(t));
+  walk(id); return out;
+}
+// The person someone reports to, skipping connectors and team headings
+function managerOf(team, person) {
+  let p = team.find(t => t.id === person.parent_id);
+  while (p && !isPerson(p)) p = team.find(t => t.id === p.parent_id);
+  return p || null;
 }

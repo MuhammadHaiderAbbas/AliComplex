@@ -173,7 +173,7 @@
   }).catch(() => {
     document.getElementById('doctor-list').innerHTML = `<p class="muted center">Could not load doctors. Please call ${esc(HOSPITAL.phone1)}.</p>`;
   });
-  rpc('amc_team').then(t => { const n = t.filter(p => p.grp !== 'group').length; ['stat-team', 'chip-team'].forEach(id => document.getElementById(id).textContent = n); }).catch(() => {});
+  rpc('amc_team').then(t => { const n = t.filter(p => p.grp !== 'group' && p.grp !== 'junction').length; ['stat-team', 'chip-team'].forEach(id => document.getElementById(id).textContent = n); }).catch(() => {});
   showGallery('gallery', 'gallery-sec', 8);
 
   rpc('amc_recent_reviews', { p_limit: 6 }).then(list => {

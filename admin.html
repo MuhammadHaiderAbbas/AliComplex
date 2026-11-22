@@ -209,12 +209,16 @@
           <div class="field"><label>Group (colour on chart)</label><select name="grp">
             <option value="leadership">Management</option><option value="clinical">Clinical Services</option><option value="allied">Allied Health</option>
             <option value="nursing">Nursing</option><option value="admin">Administration &amp; Finance</option><option value="support">Support Services</option>
-            <option value="group">Team heading (not a person)</option></select></div>
+            <option value="group">Team heading (not a person)</option><option value="junction">Connector only (lines, no box)</option></select></div>
         </div>
         <div class="row3">
           <div class="field"><label>Reports to</label><select name="parent_id"></select></div>
           <div class="field"><label>Order</label><input name="sort_order" type="number"></div>
           <div class="field"><label>Show on website</label><select name="show_on_site"><option value="1">Yes</option><option value="0">No</option></select></div>
+        </div>
+        <div class="row">
+          <div class="field"><label>People under this one are drawn</label><select name="layout"><option value="column">As a list below (arrows from the side)</option><option value="row">Side by side in a row (arrows down)</option><option value="stack">Stacked blocks (connectors)</option></select></div>
+          <div class="field"><label>Label above the people under them (optional)</label><input name="child_label" placeholder="e.g. Nursing Staff"></div>
         </div>
         <div class="actions-row">
           <button class="btn" type="submit">Save</button>
@@ -872,7 +876,12 @@ $('tg-off').onclick = async () => {
 
 // ===== printing =====
 function printDocs(html) {
-  $('print-area').innerHTML = html;
+  const area = $('print-area');
+  area.innerHTML = html;
+  // measure off-screen so charts can be scaled to fit the page
+  area.style.cssText = 'display:block;position:absolute;left:-10000px;top:0';
+  fitOrgChart(area);
+  area.style.cssText = '';
   document.body.classList.add('print-doc');
   setTimeout(() => { window.print(); document.body.classList.remove('print-doc'); }, 150);
 }
@@ -888,16 +897,16 @@ async function loadTeam() {
   const name = id => (team.find(t => t.id === id) || {}).name || '—';
   $('team-rows').innerHTML = rows.map(([t, d]) => `<tr>
     <td style="padding-left:${12 + d * 22}px">${d ? '└ ' : ''}<b>${esc(t.name)}</b>${t.qualification ? `<div class="muted small" style="padding-left:${d ? 16 : 0}px">${esc(t.qualification)}</div>` : ''}</td>
-    <td>${esc(t.role)}</td><td>${esc(GRP_LABEL[t.grp] || 'Heading')}</td><td>${t.parent_id ? esc(name(t.parent_id)) : '—'}</td>
+    <td>${esc(t.role)}</td><td>${t.grp === 'junction' ? '<span class="muted">Connector</span>' : esc(GRP_LABEL[t.grp] || 'Heading')}</td><td>${t.parent_id ? esc(name(t.parent_id)) : '—'}</td>
     <td>${t.show_on_site ? 'Yes' : 'No'}</td><td><button class="btn small outline" onclick="editTeam(${t.id})">Edit</button></td></tr>`).join('');
 }
 let teamEditing = null;
 function editTeam(id) {
-  const t = team.find(x => x.id === id) || { name: '', role: '', qualification: '', grp: 'clinical', parent_id: null, sort_order: 0, show_on_site: true };
+  const t = team.find(x => x.id === id) || { name: '', role: '', qualification: '', grp: 'clinical', parent_id: null, sort_order: 0, show_on_site: true, layout: 'column', child_label: '' };
   teamEditing = id || null;
   const f = $('team-form');
   $('team-form-title').textContent = id ? 'Edit ' + t.name : 'Add person';
-  ['name', 'role', 'qualification', 'grp', 'sort_order'].forEach(k => f.elements[k].value = t[k] ?? '');
+  ['name', 'role', 'qualification', 'grp', 'sort_order', 'layout', 'child_label'].forEach(k => f.elements[k].value = t[k] ?? '');
   f.elements.show_on_site.value = t.show_on_site ? '1' : '0';
   f.elements.parent_id.innerHTML = '<option value="">— Nobody (top of chart) —</option>' + team.filter(x => x.id !== id)
     .map(x => `<option value="${x.id}" ${x.id === t.parent_id ? 'selected' : ''}>${esc(x.name)}${x.role ? ' – ' + esc(x.role) : ''}</option>`).join('');
@@ -908,7 +917,7 @@ function editTeam(id) {
 $('team-form').addEventListener('submit', async e => {
   e.preventDefault();
   const f = e.target, p = {};
-  ['name', 'role', 'qualification', 'grp', 'parent_id', 'sort_order'].forEach(k => p[k] = f.elements[k].value);
+  ['name', 'role', 'qualification', 'grp', 'parent_id', 'sort_order', 'layout', 'child_label'].forEach(k => p[k] = f.elements[k].value);
   p.show_on_site = f.elements.show_on_site.value === '1';
   try { await aapi('amc_admin_save_team', { p_id: teamEditing, p }); flash('Saved.'); f.classList.add('hidden'); loadTeam(); } catch (err) { flash(err.message, 'error'); }
 });
@@ -1098,7 +1107,7 @@ function editEmp(id) {
   ['emp_code', 'name', 'designation', 'department', 'cnic', 'phone', 'join_date', 'leave_date', 'employment_type', 'hours_per_week', 'bank_account', 'basic', 'pf_percent', 'tax_mode', 'tax_manual']
     .forEach(k => f.elements[k].value = e[k] ?? '');
   f.elements.active.value = e.active ? '1' : '0';
-  f.elements.team_id.innerHTML = '<option value="">— Not on chart —</option>' + team.filter(t => t.grp !== 'group').map(t => `<option value="${t.id}" ${t.id === e.team_id ? 'selected' : ''}>${esc(t.name)} – ${esc(t.role)}</option>`).join('');
+  f.elements.team_id.innerHTML = '<option value="">— Not on chart —</option>' + team.filter(isPerson).map(t => `<option value="${t.id}" ${t.id === e.team_id ? 'selected' : ''}>${esc(t.name)} – ${esc(t.role)}</option>`).join('');
   $('allow-rows').innerHTML = (e.allowances || []).map(a => lineRow('allow-line', a)).join('');
   f.classList.remove('hidden'); f.scrollIntoView({ behavior: 'smooth' });
 }
@@ -1158,7 +1167,9 @@ async function letterPages(kind, d, ref, code, status) {
   let html = kind === 'reference' ? referenceLetterHTML(d, ref, code, status) : generalLetterHTML(d, ref, code, status);
   if (kind === 'reference' && d.attach_chart) {
     const list = await rpc('amc_team');
-    html += letterheadHTML(`<div class="doc-title">ORGANISATION CHART</div>${orgChartHTML(list)}<p class="fine">Attachment to letter ${esc(ref || '')}</p>`, { footer: verifyFooter(ref, code) })
+    html += letterheadHTML(`<div class="doc-title">ORGANISATION CHART</div>${orgChartHTML(list, { list: false }).replace('class="tree-fit"', 'class="tree-fit" data-maxh="520"')}
+      <div class="chart-sign"><div><div class="sign-line"></div><b>${esc(d.sign_name || HOSPITAL.signatory_name || '')}</b><br>${esc(d.sign_title || HOSPITAL.signatory_title || '')}</div></div>
+      <p class="fine">Attachment to letter ${esc(ref || '')}</p>`, { footer: verifyFooter(ref, code) })
       .replace('<div class="lh-page" data-no-tr>', '<div class="lh-page chart-page" data-no-tr>');
   }
   return html;
@@ -1185,6 +1196,7 @@ function letterData() {
 async function letterPreview() {
   const d = letterData();
   $('l-preview').innerHTML = await letterPages(LF().elements.kind.value, d, null, null, 'issued');
+  fitOrgChart($('l-preview'));
 }
 $('l-new').onclick = () => {
   const f = LF(); f.reset();
@@ -1201,9 +1213,9 @@ let lpT; LF().addEventListener('input', () => { clearTimeout(lpT); lpT = setTime
 $('l-fill').onclick = () => {
   const e = emps.find(x => x.id === Number(LF().elements.employee_id.value));
   if (!e) return flash('Choose an employee first.', 'error');
-  const f = LF().elements, t = team.find(x => x.id === e.team_id), boss = t && team.find(x => x.id === t.parent_id);
-  const reports = t ? team.filter(x => x.parent_id === t.id) : [];
-  const expand = x => x.grp === 'group' ? team.filter(y => y.parent_id === x.id).map(y => `${y.name} (${y.role})`).join(', ') : `${x.name} (${x.role})`;
+  const f = LF().elements, t = team.find(x => x.id === e.team_id), boss = t && managerOf(team, t);
+  const reports = t ? directReports(team, t.id) : [];
+  const expand = x => x.role ? `${x.name} (${x.role})` : x.name;
   const hcs = team.find(x => /head of clinical/i.test(x.role));
   f.employee_name.value = e.name; f.cnic.value = e.cnic; f.title_ref.value = e.designation;
   f.start_date.value = e.join_date || ''; f.end_date.value = e.leave_date || ''; f.emp_type.value = e.employment_type; f.hours.value = e.hours_per_week;
