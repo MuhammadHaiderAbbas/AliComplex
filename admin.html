@@ -270,7 +270,10 @@
             <div><b>Income</b><div id="earn-rows"></div><button type="button" class="btn small outline" data-add="earn">+ Add income line</button></div>
             <div><b>Deductions</b><div id="ded-rows"></div><button type="button" class="btn small outline" data-add="ded">+ Add deduction line</button></div>
           </div>
-          <div class="field" style="margin-top:14px"><label>Remarks (optional, printed on slip)</label><input name="remarks" maxlength="200"></div>
+          <div class="row" style="margin-top:14px">
+            <div class="field"><label>Title addition (optional)</label><input name="title_note" maxlength="60" placeholder="e.g. & Eid ul Adha Bonus"></div>
+            <div class="field"><label>Remarks (optional, printed on slip)</label><input name="remarks" maxlength="200"></div>
+          </div>
           <div class="summary" id="slip-totals"></div>
           <div class="actions-row">
             <button class="btn" type="submit">Save draft</button>
@@ -316,6 +319,7 @@
           <div class="row3">
             <div class="field"><label>Fixed monthly tax (if fixed)</label><input name="tax_manual" type="number" min="0"></div>
             <div class="field"><label>Active</label><select name="active"><option value="1">Yes</option><option value="0">No (left / paused)</option></select></div>
+            <div class="field"><label>BPS / Stage (optional)</label><div style="display:flex;gap:6px"><input name="bps" placeholder="BPS" style="width:50%"><input name="stage" placeholder="Stage" style="width:50%"></div></div>
           </div>
           <b>Monthly allowances</b>
           <div id="allow-rows"></div>
@@ -986,8 +990,9 @@ function buildSlip(e, period) {
   const pf = Math.round(e.basic * Number(e.pf_percent) / 100);
   const wd = workingDays(period);
   return { name: e.name, designation: e.designation, department: e.department, emp_code: e.emp_code, join_date: e.join_date, bank_account: maskAcc(e.bank_account),
-    period_label: periodLabel(period), working_days: wd, days_attended: wd, leaves: 0, remarks: '',
-    earnings, deductions: [{ name: 'Provident Fund Contribution', amount: pf }, { name: 'Withholding Tax', amount: tax }] };
+    period_label: periodLabel(period), working_days: wd, days_attended: wd, leaves: 0, remarks: '', title_note: '', bps: e.bps || '', stage: e.stage || '',
+    earnings: earnings.map(x => /^basic/i.test(x.name) ? { ...x, name: 'Basic' } : x),
+    deductions: [{ name: 'Income Tax (W/H)', amount: tax }, { name: 'Provident Fund', amount: pf }, { name: 'Adv/Loan', amount: 0 }, { name: 'Misc. Deduction', amount: 0 }] };
 }
 
 async function loadSlips() {
@@ -1063,13 +1068,14 @@ $('slip-form').addEventListener('input', slipTotals);
 function slipFromForm() {
   const f = $('slip-form'), s = slips.find(x => x.id === slipEditing);
   return { ...s.data, working_days: Number(f.elements.working_days.value) || 0, days_attended: Number(f.elements.days_attended.value) || 0,
-    leaves: Number(f.elements.leaves.value) || 0, remarks: f.elements.remarks.value.trim(), earnings: readLines('earn-line'), deductions: readLines('ded-line') };
+    leaves: Number(f.elements.leaves.value) || 0, remarks: f.elements.remarks.value.trim(), title_note: f.elements.title_note.value.trim(),
+    earnings: readLines('earn-line'), deductions: readLines('ded-line').concat([]).map(x => x) };
 }
 function editSlip(s) {
   slipEditing = s.id;
   const f = $('slip-form');
   $('slip-title').textContent = `Payslip – ${s.data.name}, ${s.data.period_label}`;
-  ['working_days', 'days_attended', 'leaves', 'remarks'].forEach(k => f.elements[k].value = s.data[k] ?? '');
+  ['working_days', 'days_attended', 'leaves', 'remarks', 'title_note'].forEach(k => f.elements[k].value = s.data[k] ?? '');
   $('earn-rows').innerHTML = s.data.earnings.map(x => lineRow('earn-line', x)).join('');
   $('ded-rows').innerHTML = s.data.deductions.map(x => lineRow('ded-line', x)).join('');
   slipTotals(); f.classList.remove('hidden'); f.scrollIntoView({ behavior: 'smooth' });
@@ -1099,12 +1105,12 @@ async function loadEmps() {
 }
 function editEmp(id) {
   const e = emps.find(x => x.id === id) || { emp_code: '', name: '', designation: '', department: '', cnic: '', phone: '', join_date: '', leave_date: '', employment_type: 'Full-time',
-    hours_per_week: 48, bank_account: '', basic: 0, allowances: [{ name: 'House Rent Allowance', amount: '' }, { name: 'Medical Allowance', amount: '' }, { name: 'Utility Allowance', amount: '' }],
+    hours_per_week: 48, bank_account: '', basic: 0, allowances: [{ name: 'HRA', amount: '' }, { name: 'Utility', amount: '' }, { name: 'Adhoc', amount: '' }, { name: 'Medical Allowance', amount: '' }, { name: 'Fuel & Dvr Allowance', amount: '' }],
     pf_percent: officeCfg?.pf_default || 0, tax_mode: 'auto', tax_manual: 0, team_id: null, active: true };
   empEditing = id || null;
   const f = $('emp-form');
   $('emp-title').textContent = id ? 'Edit ' + e.name : 'Add employee';
-  ['emp_code', 'name', 'designation', 'department', 'cnic', 'phone', 'join_date', 'leave_date', 'employment_type', 'hours_per_week', 'bank_account', 'basic', 'pf_percent', 'tax_mode', 'tax_manual']
+  ['emp_code', 'name', 'designation', 'department', 'cnic', 'phone', 'join_date', 'leave_date', 'employment_type', 'hours_per_week', 'bank_account', 'basic', 'pf_percent', 'tax_mode', 'tax_manual', 'bps', 'stage']
     .forEach(k => f.elements[k].value = e[k] ?? '');
   f.elements.active.value = e.active ? '1' : '0';
   f.elements.team_id.innerHTML = '<option value="">— Not on chart —</option>' + team.filter(isPerson).map(t => `<option value="${t.id}" ${t.id === e.team_id ? 'selected' : ''}>${esc(t.name)} – ${esc(t.role)}</option>`).join('');
@@ -1114,7 +1120,7 @@ function editEmp(id) {
 $('emp-form').addEventListener('submit', async ev => {
   ev.preventDefault();
   const f = ev.target, p = {};
-  ['emp_code', 'name', 'designation', 'department', 'cnic', 'phone', 'join_date', 'leave_date', 'employment_type', 'hours_per_week', 'bank_account', 'basic', 'pf_percent', 'tax_mode', 'tax_manual', 'team_id']
+  ['emp_code', 'name', 'designation', 'department', 'cnic', 'phone', 'join_date', 'leave_date', 'employment_type', 'hours_per_week', 'bank_account', 'basic', 'pf_percent', 'tax_mode', 'tax_manual', 'team_id', 'bps', 'stage']
     .forEach(k => p[k] = f.elements[k].value);
   p.active = f.elements.active.value === '1';
   p.allowances = readLines('allow-line').filter(a => a.amount);

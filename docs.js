@@ -48,41 +48,39 @@ function verifyFooter(ref, code) {
 }
 
 // ---------- payslip ----------
+// Layout follows the common Pakistani salary-slip format: details grid, then
+// Pay & Allowances | Others Allowances | Deductions, then Gross Pay and Net Amount.
+const OTHER_ALLOW = /medical|fuel|driver|dvr|conveyance|transport|arrear|overtime|big city|disl|other|incentive/i;
 function payslipHTML(s) {
   const d = s.data, H = typeof HOSPITAL !== 'undefined' ? HOSPITAL : {};
-  const rows = Math.max(d.earnings.length, d.deductions.length);
+  const pay = d.earnings.filter(x => !OTHER_ALLOW.test(x.name)), oth = d.earnings.filter(x => OTHER_ALLOW.test(x.name));
+  const ded = d.deductions;
+  const rows = Math.max(pay.length, oth.length, ded.length, 4);
+  const cell = (x, k) => x ? (k === 'n' ? esc(x.name) : money(x.amount)) : '';
   let body = '';
-  for (let i = 0; i < rows; i++) {
-    const e = d.earnings[i], x = d.deductions[i];
-    body += `<tr><td>${e ? esc(e.name) : ''}</td><td class="num">${e ? money(e.amount) : ''}</td><td>${x ? esc(x.name) : ''}</td><td class="num">${x ? money(x.amount) : ''}</td></tr>`;
-  }
-  const tax = (d.deductions.find(x => /tax/i.test(x.name)) || {}).amount || 0;
-  const pf = (d.deductions.find(x => /provident/i.test(x.name)) || {}).amount || 0;
-  const allow = d.earnings.filter(x => !/^basic/i.test(x.name)).reduce((a, x) => a + Number(x.amount), 0);
+  for (let i = 0; i < rows; i++) body += `<tr><td>${cell(pay[i], 'n')}</td><td class="num">${cell(pay[i])}</td><td>${cell(oth[i], 'n')}</td><td class="num">${cell(oth[i])}</td><td>${cell(ded[i], 'n')}</td><td class="num">${cell(ded[i])}</td></tr>`;
+  const sum = a => a.reduce((t, x) => t + Number(x.amount || 0), 0);
+  const stamp = s.status === 'void' ? ' <span class="void">VOID</span>' : s.status === 'draft' ? ' <span class="void">DRAFT</span>' : '';
   return letterheadHTML(`
-    <div class="doc-title">SALARY SLIP${s.status === 'void' ? ' <span class="void">VOID</span>' : s.status === 'draft' ? ' <span class="void">DRAFT</span>' : ''}</div>
-    <table class="ps-info">
-      <tr><th>Name</th><td>${esc(d.name)}</td><th>Organisation</th><td>${esc(H.legal_name || 'Ali Medical Complex')}</td></tr>
-      <tr><th>Designation</th><td>${esc(d.designation)}</td><th>Financial Year</th><td>${esc(s.fy)}</td></tr>
-      <tr><th>Employee Code</th><td>${esc(d.emp_code)}</td><th>Salary Period</th><td>${esc(d.period_label)}</td></tr>
-      <tr><th>Department</th><td>${esc(d.department || '—')}</td><th>Date of Joining</th><td>${d.join_date ? longDate(d.join_date) : '—'}</td></tr>
-      <tr><th>Bank A/C</th><td>${esc(d.bank_account || '—')}</td><th>Days (working / attended / leave)</th><td>${d.working_days ?? '—'} / ${d.days_attended ?? '—'} / ${d.leaves ?? 0}</td></tr>
+    <div class="ss-title">Salary Slip for the Month of ${esc(d.period_label)}${d.title_note ? ' ' + esc(d.title_note) : ''}${stamp}</div>
+    <div class="ss-sub">${esc(H.legal_name || 'Ali Medical Complex')} · Financial Year ${esc(s.fy)}</div>
+    <table class="ss">
+      <colgroup><col style="width:20%"><col style="width:46%"><col style="width:17%"><col style="width:17%"></colgroup>
+      <tr><th rowspan="2">Name and Designation:</th><td rowspan="2" class="c"><b>${esc(d.name)}</b>${d.designation ? ', ' + esc(d.designation) : ''}</td><th>BPS:</th><td class="c">${esc(d.bps || '—')}</td></tr>
+      <tr><th>Stage:</th><td class="c">${esc(d.stage || '—')}</td></tr>
+      <tr><th>DOJ</th><td class="c">${d.join_date ? longDate(d.join_date) : '—'}</td><th>Days:</th><td class="c">${d.days_attended ?? d.working_days ?? '—'}</td></tr>
+      <tr><th>Department</th><td class="c">${esc(d.department || '—')}</td><th>Emp. Code:</th><td class="c">${esc(d.emp_code)}</td></tr>
+      <tr><th>A/C #</th><td colspan="3">${esc(d.bank_account || '—')}</td></tr>
     </table>
-    <table class="ps-table">
-      <thead><tr><th colspan="2">Income</th><th colspan="2">Deductions</th></tr>
-        <tr><th>Particulars</th><th class="num">Amount (PKR)</th><th>Particulars</th><th class="num">Amount (PKR)</th></tr></thead>
+    <table class="ss ss-pay">
+      <colgroup><col style="width:19%"><col style="width:13%"><col style="width:21%"><col style="width:13%"><col style="width:21%"><col style="width:13%"></colgroup>
+      <thead><tr><th>Pay &amp; Allowances</th><th class="num">Amount</th><th>Others Allowances</th><th class="num">Amount</th><th>Deductions</th><th class="num">Amount</th></tr></thead>
       <tbody>${body}</tbody>
-      <tfoot><tr><th>Gross Income</th><th class="num">${money(d.gross)}</th><th>Total Deductions</th><th class="num">${money(d.total_deductions)}</th></tr></tfoot>
+      <tr class="sub"><th>Total</th><td class="num">${money(sum(pay))}</td><th>Total</th><td class="num">${money(sum(oth))}</td><th>Total Deductions</th><td class="num">${money(d.total_deductions)}</td></tr>
+      <tr class="tot"><th colspan="5">Gross Pay</th><td class="num">${money(d.gross)}</td></tr>
+      <tr class="tot net"><th colspan="5">Net Amount</th><td class="num">${money(d.net)}</td></tr>
+      <tr><td colspan="6" class="words"><b>Amount in words:</b> ${amountInWords(d.net)}${d.remarks ? `<br><b>Remarks:</b> ${esc(d.remarks)}` : ''}</td></tr>
     </table>
-    <table class="ps-summary">
-      <tr><th>Gross Income</th><td class="num">${money(d.gross)}</td></tr>
-      <tr><th>Allowances (included in gross)</th><td class="num">${money(allow)}</td></tr>
-      <tr><th>Withholding Tax</th><td class="num">${money(tax)}</td></tr>
-      <tr><th>Provident Fund Contribution</th><td class="num">${money(pf)}</td></tr>
-      <tr class="net"><th>Net Income</th><td class="num">PKR ${money(d.net)}</td></tr>
-    </table>
-    <p class="words"><b>Amount in words:</b> ${amountInWords(d.net)}</p>
-    ${d.remarks ? `<p><b>Remarks:</b> ${esc(d.remarks)}</p>` : ''}
     <div class="sign-row"><div><div class="sign-line"></div>Prepared by (Accounts)</div><div><div class="sign-line"></div>${esc(H.signatory_name || '')}<br>${esc(H.signatory_title || 'Authorised Signatory')}</div></div>
     <p class="fine">System generated document${s.issued_at ? ', issued ' + longDate(s.issued_at) : ''}. All amounts are in Pakistani Rupees (PKR). Errors &amp; omissions excepted.</p>
   `, { footer: verifyFooter(null, s.verify_code) });

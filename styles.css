@@ -707,3 +707,17 @@ html[dir=rtl] .doc-option { text-align: right; }
 .chart-page .lh-lockup { width: 56mm; }
 .chart-page .lh-contact { font-size: 8pt; }
 .chart-page .lh-head { margin-bottom: 1mm; }
+/* salary slip (sample format) */
+.ss-title { text-align: center; font-size: 13pt; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; color: #1d2a33; margin: 2mm 0 1mm; }
+.ss-sub { text-align: center; font-size: 9pt; color: #5d6b75; margin-bottom: 4mm; }
+table.ss { width: 100%; border-collapse: collapse; font-size: 9.6pt; margin-bottom: 4mm; position: relative; background: rgba(255,255,255,.65); }
+table.ss th, table.ss td { border: .35mm solid #2b3a42; padding: 1.8mm 2.4mm; vertical-align: middle; }
+table.ss th { font-weight: 600; text-align: center; background: #f1f5fb; }
+table.ss td.c { text-align: center; }
+table.ss-pay thead th { background: #e3ecf8; }
+table.ss-pay tbody td { height: 7mm; }
+table.ss-pay tr.sub th, table.ss-pay tr.sub td { background: #f6f8fb; font-weight: 600; }
+table.ss-pay tr.tot th { text-align: left; background: #fff; }
+table.ss-pay tr.tot td { font-weight: 700; font-size: 10.5pt; }
+table.ss-pay tr.net th, table.ss-pay tr.net td { background: var(--primary); color: #fff; border-color: #2b3a42; }
+table.ss-pay td.words { font-size: 9pt; background: #fbfcfe; }
