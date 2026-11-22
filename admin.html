@@ -217,7 +217,7 @@
           <div class="field"><label>Show on website</label><select name="show_on_site"><option value="1">Yes</option><option value="0">No</option></select></div>
         </div>
         <div class="row">
-          <div class="field"><label>People under this one are drawn</label><select name="layout"><option value="column">As a list below (arrows from the side)</option><option value="row">Side by side in a row (arrows down)</option><option value="stack">Stacked blocks (connectors)</option></select></div>
+          <div class="field"><label>People under this one are drawn</label><select name="layout"><option value="column">As a list below (arrows from the side)</option><option value="row">Side by side in a row (arrows down)</option><option value="stack">Stacked blocks (connectors)</option><option value="rail">Row below + side rail on the right (connectors)</option></select></div>
           <div class="field"><label>Label above the people under them (optional)</label><input name="child_label" placeholder="e.g. Nursing Staff"></div>
         </div>
         <div class="actions-row">
@@ -1167,7 +1167,7 @@ async function letterPages(kind, d, ref, code, status) {
   let html = kind === 'reference' ? referenceLetterHTML(d, ref, code, status) : generalLetterHTML(d, ref, code, status);
   if (kind === 'reference' && d.attach_chart) {
     const list = await rpc('amc_team');
-    html += letterheadHTML(`<div class="doc-title">ORGANISATION CHART</div>${orgChartHTML(list, { list: false }).replace('class="tree-fit"', 'class="tree-fit" data-maxh="520"')}
+    html += letterheadHTML(`<div class="doc-title">ORGANISATION CHART</div>${orgChartHTML(list, { list: false }).replace('class="tree-fit"', 'class="tree-fit" data-maxh="880"')}
       <div class="chart-sign"><div><div class="sign-line"></div><b>${esc(d.sign_name || HOSPITAL.signatory_name || '')}</b><br>${esc(d.sign_title || HOSPITAL.signatory_title || '')}</div></div>
       <p class="fine">Attachment to letter ${esc(ref || '')}</p>`, { footer: verifyFooter(ref, code) })
       .replace('<div class="lh-page" data-no-tr>', '<div class="lh-page chart-page" data-no-tr>');

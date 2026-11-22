@@ -178,6 +178,12 @@ function ocNode(p, kids, depth = 0) {
   const label = p.child_label ? `<div class="t-label">${esc(p.child_label)}</div>` : '';
   let inner;
   if (lay === 'row') inner = `<div class="t-row ${ch.length === 1 ? 'one' : ''}">${ch.map(c => `<div class="t-cell ${c.grp === 'junction' ? 'jn' : ''} ${c.grp === 'junction' && (c.layout || 'column') === 'column' ? 'jcol' : ''} ${c.grp !== 'junction' && (c.layout || 'column') === 'column' && kids(c).length ? 'lcol' : ''}">${ocNode(c, kids, depth + 1)}</div>`).join('')}</div>`;
+  else if (lay === 'rail') {
+    // first child hangs below the line; the rest go down a rail on the right with arrows pointing left
+    const [top, ...rest] = ch;
+    const items = rest.flatMap(r => r.grp === 'junction' ? kids(r) : [r]);
+    inner = `<div class="rail-top">${ocNode(top, kids, depth + 1)}</div><div class="rail-col">${items.map(c => `<div class="rail-item">${ocNode(c, kids, depth + 1)}</div>`).join('')}</div>`;
+  }
   else if (lay === 'stack') inner = `<div class="t-stack">${ch.map(c => `<div class="t-block">${ocNode(c, kids, depth + 1)}</div>`).join('')}</div>`;
   else inner = `<div class="t-col">${ch.map(c => `<div class="t-item">${ocNode(c, kids, depth + 1)}</div>`).join('')}</div>`;
   return `<div class="t-node lay-${lay} ${junction ? 'junction' : ''}">${box}${junction ? '' : '<div class="t-stem"></div>'}${label}${inner}</div>`;

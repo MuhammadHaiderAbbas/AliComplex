@@ -681,3 +681,29 @@ html[dir=rtl] .doc-option { text-align: right; }
 .chart-page .tree .oc-card { padding: 6px 10px; }
 .chart-page .tree .oc-card b { font-size: .9rem; } .chart-page .tree .oc-card span { font-size: .74rem; } .chart-page .tree .oc-card small { font-size: .7rem; display: block; }
 .chart-page .tree .oc-card.lg b { font-size: 1.05rem; } .chart-page .tree .oc-card.lg span { font-size: .82rem; }
+/* side rail: line continues right, first block hangs below it, the rest are fed from a rail on the right */
+.t-node.lay-rail { align-items: stretch; padding-right: 30px; }
+.t-node.lay-rail::before { content: ""; position: absolute; top: 0; left: 50%; right: 14px; border-top: 2px solid var(--L); }
+.rail-top { position: relative; display: flex; justify-content: center; }
+.rail-top::after { content: ""; position: absolute; right: -16px; top: 0; bottom: 0; border-right: 2px solid var(--L); }
+.rail-col { display: flex; flex-direction: column; align-items: flex-end; margin-top: 10px; }
+.rail-item { position: relative; padding: 6px 0; }
+.rail-item::before { content: ""; position: absolute; right: -16px; top: -10px; bottom: 0; border-right: 2px solid var(--L); }
+.rail-item + .rail-item::before { top: 0; }
+.rail-item:last-child::before { bottom: auto; height: 39px; }
+.rail-item + .rail-item:last-child::before { height: 29px; }
+.rail-item::after { content: ""; position: absolute; right: -16px; top: 29px; width: 14px; border-top: 2px solid var(--L); }
+.rail-item > .t-node { align-items: flex-end; }
+.rail-item > .t-node::before { content: ""; position: absolute; right: -8px; top: 24px; border: 6px solid transparent; border-right: 8px solid var(--L); border-left: 0; z-index: 2; }
+.rail-item > .t-node > .oc-card { width: 230px; min-width: 230px; max-width: 230px; }
+.rail-item > .t-node > .t-stem { margin-right: 114px; }
+.rail-item > .t-node.lay-row > .t-row { justify-content: flex-end; }
+.rail-item > .t-node.lay-row > .t-row.one > .t-cell { width: 230px; }
+.chart-page .rail-item > .t-node > .oc-card { width: 200px; min-width: 200px; max-width: 200px; }
+.chart-page .rail-item > .t-node > .t-stem { margin-right: 99px; }
+.chart-page .rail-item > .t-node.lay-row > .t-row.one > .t-cell { width: 200px; }
+/* chart attachment: portrait again (the chart is tall, like the hospital's own) */
+.lh-page.chart-page { width: 210mm; min-height: 297mm; page: auto; padding: 10mm 8mm 18mm 16mm; }
+.chart-page .lh-lockup { width: 56mm; }
+.chart-page .lh-contact { font-size: 8pt; }
+.chart-page .lh-head { margin-bottom: 1mm; }
