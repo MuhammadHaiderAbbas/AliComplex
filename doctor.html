@@ -16,8 +16,8 @@
   <link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="stylesheet" href="styles.css">
-  <script src="i18n.js"></script>
+  <link rel="stylesheet" href="styles.css?v=202611231007">
+  <script src="i18n.js?v=202611231007"></script>
 </head>
 <body>
 <div id="site-header"></div>
@@ -28,8 +28,8 @@
 </section>
 </main>
 <div id="site-footer"></div>
-<script src="common.js"></script>
-<script src="charts.js"></script>
+<script src="common.js?v=202611231007"></script>
+<script src="charts.js?v=202611231007"></script>
 <script>
 const id = Number(new URLSearchParams(location.search).get('id'));
 const wrap = document.getElementById('wrap');
@@ -58,6 +58,7 @@ rpc('amc_doctor', { p_id: id }).then(d => {
         </div>
         ${d.qualifications ? `<h3 style="margin-top:22px">Qualifications</h3><p>${esc(d.qualifications)}</p>` : ''}
         <h3>About</h3><p>${esc(d.bio)}</p>
+        ${d.conditions ? `<h3>Conditions treated</h3><ul class="checklist cond-list">${d.conditions.split('\n').map(x => x.trim()).filter(Boolean).map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}
         <div class="doc-meta">
           ${d.experience ? `<span>Experience: <b>${d.experience} years</b></span>` : ''}
           ${d.fee ? `<span>Consultation fee: <b>Rs. ${d.fee.toLocaleString()}</b></span>` : ''}

@@ -77,6 +77,8 @@ const isBookable = d => Object.keys(d.schedule || {}).length > 0;
 
 // Specialty info used on Home, Services and Doctors pages
 const SPECIALTIES = [
+  { key: 'Diabetes & Hormone', name: 'Diabetes & Hormones', icon: 'drop', short: 'Diabetes (including in pregnancy), thyroid, hormonal disorders, infertility, obesity and puberty problems.',
+    conditions: ['Diabetes and its complications', 'Diabetes during pregnancy', 'Thyroid disorders', 'Deficiency or excess of hormones', 'Male and female infertility', 'Obesity and related problems', 'Excessive facial and body hair', 'Early or delayed puberty', 'Hormonal problems in children', 'Menstrual and reproductive hormonal problems'] },
   { key: 'Ophthalmologist', name: 'Eye Care', icon: 'eye', short: 'Eye check-ups, vision problems, eye infections, cataract and glaucoma assessment.',
     conditions: ['Blurred or weak vision', 'Red, itchy or watery eyes', 'Eye infections and allergies', 'Cataract assessment', 'Glaucoma screening', 'Diabetic eye check-ups'] },
   { key: 'ENT Specialist', name: 'ENT (Ear, Nose & Throat)', icon: 'ear', short: 'Ear, nose, throat and sinus problems in adults and children.',
@@ -152,7 +154,8 @@ const ICON_PATHS = {
   arrow: '<path d="M5 12h14M13 6l6 6-6 6"/>',
   image: '<rect x="3" y="4" width="18" height="16" rx="2.5"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 9"/>',
   hospital: '<path d="M3 21h18M5 21V7l7-4 7 4v14"/><path d="M10 21v-4h4v4M12 8v4M10 10h4"/>',
-  info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>'
+  info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>',
+  drop: '<path d="M12 2.5s6.5 7.2 6.5 12a6.5 6.5 0 0 1-13 0c0-4.8 6.5-12 6.5-12z"/><path d="M9 15a3 3 0 0 0 3 3"/>'
 };
 function icon(name, cls = '') {
   return `<svg class="ic ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON_PATHS[name] || ICON_PATHS.info}</svg>`;

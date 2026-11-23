@@ -51,19 +51,38 @@ function verifyFooter(ref, code) {
 // Layout follows the common Pakistani salary-slip format: details grid, then
 // Pay & Allowances | Others Allowances | Deductions, then Gross Pay and Net Amount.
 const OTHER_ALLOW = /medical|fuel|driver|dvr|conveyance|transport|arrear|overtime|big city|disl|other|incentive/i;
+const PS_STD = {
+  pay: [['Basic', /^basic/i], ['HRA', /hra|house/i], ['Utility', /utilit/i], ['Adhoc 15%', /adhoc|ad-hoc/i], ['Eid Bonus', /bonus/i]],
+  oth: [['Fuel & Dvr Allowance', /fuel|dvr|driver/i], ['Medical Allowance', /medical/i], ['Disl/Big City Allce', /disl|big city/i], ['Arrears', /arrear/i], ['Others Add', /^others? add/i]],
+  ded: [['Income Tax', /tax/i], ['Provident Fund', /provident|\bpf\b/i], ['Misc. Deduction', /misc/i], ['Adv/Loan', /adv|loan/i], ['Others Ded', /^others? ded/i], ['Incremental Difference', /increment/i]]
+};
+// Put lines into the sample's fixed rows (shown as 0 when empty); anything else is added below them
+function psColumn(lines, std) {
+  const used = new Set();
+  const rows = std.map(([label, re]) => {
+    const hits = lines.filter((x, k) => !used.has(k) && re.test(x.name) && used.add(k));
+    return { name: label, amount: hits.reduce((t, x) => t + Number(x.amount || 0), 0) };
+  });
+  lines.forEach((x, k) => { if (!used.has(k)) rows.push({ name: x.name, amount: Number(x.amount || 0) }); });
+  return rows;
+}
 function payslipHTML(s) {
   const d = s.data;
-  const pay = d.earnings.filter(x => !OTHER_ALLOW.test(x.name)), oth = d.earnings.filter(x => OTHER_ALLOW.test(x.name));
-  const ded = d.deductions;
-  const rows = Math.max(pay.length, oth.length, ded.length, 4);
-  const n = x => x ? esc(x.name) : '', a = x => x ? money(x.amount) : '';
+  const otherRe = new RegExp(PS_STD.oth.map(([, r]) => r.source).join('|') + '|conveyance|transport|overtime|incentive', 'i');
+  const pay = psColumn(d.earnings.filter(x => !otherRe.test(x.name)), PS_STD.pay);
+  const oth = psColumn(d.earnings.filter(x => otherRe.test(x.name)), PS_STD.oth);
+  const ded = psColumn(d.deductions, PS_STD.ded);
+  const rows = Math.max(pay.length, oth.length, ded.length);
+  const n = x => x ? esc(x.name) : '', a = x => x ? String(Math.round(x.amount)) : '';
   let body = '';
   for (let i = 0; i < rows; i++) body += `<tr><td class="lbl">${n(pay[i])}</td><td class="amt i">${a(pay[i])}</td><td class="lbl">${n(oth[i])}</td><td class="amt">${a(oth[i])}</td><td class="lbl">${n(ded[i])}</td><td class="amt">${a(ded[i])}</td></tr>`;
   const stamp = s.status === 'void' ? '<span class="ps-stamp">VOID</span>' : s.status === 'draft' ? '<span class="ps-stamp">DRAFT</span>' : '';
+  const [mon, yr] = String(d.period_label).split(' ');
+  const title = `Salary Slip for the Month of ${esc(mon)}${d.title_note ? ' ' + esc(d.title_note) : ''}, ${esc(yr)}`;
   return `<div class="ps-page" data-no-tr>
     ${stamp}
     <div class="ps-logo"><img src="brand/logo-stacked.svg" alt="Ali Medical Complex"></div>
-    <div class="ps-title">Salary Slip for the Month of ${esc(d.period_label)}${d.title_note ? ' ' + esc(d.title_note) : ''}</div>
+    <div class="ps-title">${title}</div>
     <table class="ps">
       <colgroup><col style="width:18%"><col style="width:10%"><col style="width:22%"><col style="width:12%"><col style="width:19%"><col style="width:19%"></colgroup>
       <tr><th rowspan="2" class="hd">Name and<br>Designation:</th><td rowspan="2" colspan="3" class="val">${esc(d.name)}${d.designation ? ', ' + esc(d.designation) : ''}</td><th class="hd">BPS:</th><td class="val">${esc(d.bps || '0')}</td></tr>
@@ -73,8 +92,8 @@ function payslipHTML(s) {
       <tr><th class="hd">A/C #</th><td colspan="5" class="acc">${esc(d.bank_account || '')}</td></tr>
       <tr class="cols"><th>Pay &amp; Allowances</th><th>Amount</th><th>Others Allowances</th><th>Amount</th><th>Deductions</th><th>Amount</th></tr>
       ${body}
-      <tr class="tot"><th colspan="5">Gross Pay</th><td class="val">${money(d.gross)}</td></tr>
-      <tr class="tot"><th colspan="5">Net Amount</th><td class="val">${money(d.net)}</td></tr>
+      <tr class="tot"><th colspan="5">Gross Pay</th><td class="val">${Math.round(d.gross)}</td></tr>
+      <tr class="tot"><th colspan="5">Net Amount</th><td class="val">${Math.round(d.net)}</td></tr>
       <tr><td colspan="6" class="blank">${s.verify_code ? `<span class="ps-verify">Verification code ${esc(s.verify_code)}</span>` : ''}</td></tr>
     </table>
   </div>`;

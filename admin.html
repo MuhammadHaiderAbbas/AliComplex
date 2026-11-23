@@ -7,7 +7,7 @@
   <title>Staff Panel | Ali Medical Complex</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="preload" as="image" href="brand/logo-horizontal.svg">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=202611231007">
   <style>
     body { background: var(--bg-soft); }
     .admin-bar { background: var(--primary-dark); color: #fff; }
@@ -151,6 +151,7 @@
         </div>
         <div class="field"><label>Qualifications</label><input name="qualifications"></div>
         <div class="field"><label>Short bio</label><textarea name="bio" rows="2"></textarea></div>
+        <div class="field"><label>Conditions treated <span class="muted" style="font-weight:400">(one per line, shown on the doctor’s profile)</span></label><textarea name="conditions" rows="5"></textarea></div>
         <div class="row3">
           <div class="field"><label>Slot length (minutes)</label><select name="slot_minutes"><option>10</option><option>15</option><option>20</option><option>30</option><option>45</option><option>60</option></select></div>
           <div class="field"><label>Display order</label><input name="sort_order" type="number"></div>
@@ -499,8 +500,8 @@
 </div>
 
 <div id="print-area"></div>
-<script src="common.js"></script>
-<script src="docs.js"></script>
+<script src="common.js?v=202611231007"></script>
+<script src="docs.js?v=202611231007"></script>
 <script>
 const $ = id => document.getElementById(id);
 const SITE_KEYS = ['announcement', 'phone1', 'phone2', 'whatsapp', 'email', 'facebook', 'opd_note', 'legal_name', 'website', 'signatory_name', 'signatory_title', 'provisional_note'];
@@ -679,7 +680,7 @@ function editDoctor(id) {
   editingId = id || null;
   $('doc-form-title').textContent = id ? 'Edit ' + d.name : 'Add Doctor';
   const f = $('doc-form');
-  ['name', 'specialty', 'title', 'experience', 'fee', 'qualifications', 'bio', 'slot_minutes', 'sort_order'].forEach(k => f.elements[k].value = d[k] ?? '');
+  ['name', 'specialty', 'title', 'experience', 'fee', 'qualifications', 'bio', 'slot_minutes', 'sort_order', 'conditions'].forEach(k => f.elements[k].value = d[k] ?? '');
   f.elements.active.value = d.active ? '1' : '0';
   setPhotoField(f, 'doctor', id || null, d);
   $('sched').innerHTML = DAY_ORDER.map(day => `<b>${DAY_NAMES[day]}</b>
@@ -698,7 +699,10 @@ $('doc-form').addEventListener('submit', async e => {
     const a = f.querySelector(`[data-day=${day}][data-i="0"]`).value, b = f.querySelector(`[data-day=${day}][data-i="1"]`).value;
     if (a && b) body.schedule[day] = [a, b];
   });
-  try { await aapi('amc_admin_save_doctor', { p_id: editingId, p: body }); flash('Doctor saved.'); f.classList.add('hidden'); loadDoctors(); }
+  try {
+    const id = await aapi('amc_admin_save_doctor', { p_id: editingId, p: body });
+    await aapi('amc_admin_save_doctor_conditions', { p_id: Number(id) || editingId, p_conditions: f.elements.conditions.value });
+    flash('Doctor saved.'); f.classList.add('hidden'); loadDoctors(); }
   catch (err) { flash(err.message, 'error'); }
 });
 
@@ -989,7 +993,7 @@ function buildSlip(e, period) {
   const tax = e.tax_mode === 'none' ? 0 : e.tax_mode === 'manual' ? Number(e.tax_manual) : monthlyTax(taxable);
   const pf = Math.round(e.basic * Number(e.pf_percent) / 100);
   const wd = workingDays(period);
-  return { name: e.name, designation: e.designation, department: e.department, emp_code: e.emp_code, join_date: e.join_date, bank_account: maskAcc(e.bank_account),
+  return { name: e.name, designation: e.designation, department: e.department, emp_code: e.emp_code, join_date: e.join_date, bank_account: e.bank_account || '',
     period_label: periodLabel(period), working_days: wd, days_attended: wd, leaves: 0, remarks: '', title_note: '', bps: e.bps || '', stage: e.stage || '',
     earnings: earnings.map(x => /^basic/i.test(x.name) ? { ...x, name: 'Basic' } : x),
     deductions: [{ name: 'Income Tax (W/H)', amount: tax }, { name: 'Provident Fund', amount: pf }, { name: 'Adv/Loan', amount: 0 }, { name: 'Misc. Deduction', amount: 0 }] };
