@@ -17,8 +17,8 @@
   <link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="stylesheet" href="styles.css?v=202611231026">
-  <script src="i18n.js?v=202611231026"></script>
+  <link rel="stylesheet" href="styles.css?v=202611231046">
+  <script src="i18n.js?v=202611231046"></script>
   <script type="application/ld+json">
   {"@context":"https://schema.org","@type":"Hospital","name":"Ali Medical Complex","logo":"https://alimedicalcomplex.health/brand/logo-stacked.png","image":"https://alimedicalcomplex.health/brand/og-image.png",
    "address":{"@type":"PostalAddress","streetAddress":"Chungi No. 1, Suraj Miani Road","addressLocality":"Multan","addressRegion":"Punjab","addressCountry":"PK"},
@@ -35,6 +35,12 @@
       <span class="eyebrow">Suraj Miani Road, Multan</span>
       <h1 style="margin-top:14px">Expert care for your family, <em>all under one roof</em></h1>
       <p class="lead">Specialists in eye care, ENT, heart, women’s health, skin, child health and dental care, with physiotherapy, nutrition, laboratory and pharmacy under one roof.</p>
+      <form class="hero-search" action="doctors.html" role="search">
+        <span class="ic-slot" data-icon="search"></span>
+        <input name="q" list="search-list" placeholder="Search a doctor, specialty or condition…" aria-label="Search a doctor, specialty or condition" autocomplete="off">
+        <datalist id="search-list"></datalist>
+        <button class="btn" type="submit">Search</button>
+      </form>
       <div class="actions">
         <a class="btn" href="book.html"><span class="ic-slot" data-icon="calendar"></span>Book an Appointment</a>
         <a class="btn outline" data-site="phone1" href="tel:0612039965">061-2039965</a>
@@ -55,6 +61,12 @@
 </section>
 
 <div class="container">
+  <form class="qbook reveal" id="qbook" aria-label="Quick booking">
+    <div class="qb-field"><label for="qb-spec">Service</label><select id="qb-spec"><option value="">All services</option></select></div>
+    <div class="qb-field"><label for="qb-doc">Doctor</label><select id="qb-doc"><option value="">Loading doctors…</option></select></div>
+    <div class="qb-field qb-next"><label>Next available</label><b id="qb-next">–</b></div>
+    <button class="btn" type="submit"><span class="ic-slot" data-icon="calendar"></span>See available times</button>
+  </form>
   <div class="quick">
     <a href="book.html" class="reveal"><span class="ico"><span class="ic-slot" data-icon="calendar"></span></span><span><b>Book Appointment</b><span class="muted">Pick a doctor &amp; time</span></span></a>
     <a href="doctors.html" class="reveal"><span class="ico"><span class="ic-slot" data-icon="search"></span></span><span><b>Find a Doctor</b><span class="muted">Search by specialty</span></span></a>
@@ -94,7 +106,7 @@
       <p class="muted">Qualified, experienced specialists. Choose a doctor to see available times.</p>
     </div>
     <div id="prov-home"></div>
-    <div class="grid cols-3" id="doctor-list"><p class="muted center">Loading doctors…</p></div>
+    <div class="grid cols-3" id="doctor-list"></div>
     <p class="center" style="margin-top:26px"><a class="btn outline" href="doctors.html">See all doctors</a></p>
   </div>
 </section>
@@ -150,10 +162,10 @@
 </main>
 <div id="site-footer"></div>
 
-<script src="common.js?v=202611231026"></script>
-<script src="charts.js?v=202611231026"></script>
-<script src="art.js?v=202611231026"></script>
-<script src="gallery.js?v=202611231026"></script>
+<script src="common.js?v=202611231046"></script>
+<script src="charts.js?v=202611231046"></script>
+<script src="art.js?v=202611231046"></script>
+<script src="gallery.js?v=202611231046"></script>
 <script>
   document.getElementById('hero-scene').innerHTML = ART.hospital;
   fillIcons();
@@ -162,6 +174,19 @@
   document.getElementById('stat-spec').textContent = SPECIALTIES.length;
 
   rpc('amc_doctors').then(docs => {
+    // quick booking + search suggestions
+    const specs = [...new Set(docs.filter(isBookable).map(d => d.specialty))];
+    document.getElementById('qb-spec').innerHTML = '<option value="">All services</option>' + specs.map(s => `<option>${esc(s)}</option>`).join('');
+    const fillDocs = () => {
+      const sp = document.getElementById('qb-spec').value;
+      const list = docs.filter(d => isBookable(d) && (!sp || d.specialty === sp));
+      document.getElementById('qb-doc').innerHTML = list.map(d => `<option value="${d.id}">${esc(d.name)} – ${esc(d.specialty)}</option>`).join('');
+      showNext();
+    };
+    const showNext = () => { const d = docs.find(x => x.id === Number(document.getElementById('qb-doc').value)); document.getElementById('qb-next').textContent = d ? (nextAvailableText(d) || '–') : '–'; };
+    document.getElementById('qb-spec').onchange = fillDocs; document.getElementById('qb-doc').onchange = showNext; fillDocs();
+    document.getElementById('qbook').onsubmit = e => { e.preventDefault(); const id = document.getElementById('qb-doc').value; location.href = 'book.html' + (id ? '?doctor=' + id : ''); };
+    document.getElementById('search-list').innerHTML = [...new Set([...docs.map(d => d.name), ...docs.map(d => d.specialty), ...SPECIALTIES.map(s => s.name)])].map(v => `<option value="${esc(v)}">`).join('');
     const n = docs.length;
     ['stat-docs', 'chip-docs'].forEach(id => document.getElementById(id).textContent = n);
     document.getElementById('chip-today').textContent = docs.filter(d => isBookable(d) && worksToday(d)).length;
@@ -183,6 +208,7 @@
       ${stars(r.rating)}<p>“${esc(r.comment)}”</p>
       <div class="muted small">— ${esc(r.name)}, visited <a href="doctor.html?id=${r.doctor_id}">${esc(r.doctor)}</a></div></div>`).join('');
   }).catch(() => {});
+  document.getElementById('doctor-list').innerHTML = document.getElementById('doctor-list').innerHTML || skeletonCards(3);
 </script>
 </body>
 </html>

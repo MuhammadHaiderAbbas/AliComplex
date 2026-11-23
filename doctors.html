@@ -16,8 +16,8 @@
   <link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="stylesheet" href="styles.css?v=202611231026">
-  <script src="i18n.js?v=202611231026"></script>
+  <link rel="stylesheet" href="styles.css?v=202611231046">
+  <script src="i18n.js?v=202611231046"></script>
 </head>
 <body>
 <div id="site-header"></div>
@@ -26,18 +26,20 @@
 
 <section>
   <div class="container">
-    <div class="toolbar">
-      <input type="search" id="q" placeholder="Search doctor or condition…" aria-label="Search doctors">
-      <div class="chips" id="chips"></div>
+    <div class="toolbar card">
+      <div class="tb-search"><span class="ic-slot" data-icon="search"></span><input type="search" id="q" placeholder="Search doctor or condition…" aria-label="Search doctors"></div>
       <label class="check"><input type="checkbox" id="today"> Available today</label>
+      <div class="tb-sort"><label for="sort">Sort by</label><select id="sort"><option value="soon">Soonest available</option><option value="name">Name</option><option value="fee-asc">Fee: low to high</option><option value="fee-desc">Fee: high to low</option></select></div>
+      <div class="chips" id="chips"></div>
     </div>
     <div id="prov"></div>
-    <div class="grid cols-3" id="list"><p class="muted">Loading doctors…</p></div>
+    <p class="muted small" id="count" aria-live="polite"></p>
+    <div class="grid cols-3" id="list"></div>
   </div>
 </section>
 </main>
 <div id="site-footer"></div>
-<script src="common.js?v=202611231026"></script>
+<script src="common.js?v=202611231046"></script>
 <script>
 let all = [], spec = new URLSearchParams(location.search).get('specialty') || '';
 const $ = id => document.getElementById(id);
@@ -45,13 +47,20 @@ function draw() {
   const q = $('q').value.trim().toLowerCase();
   const list = all.filter(d => (!spec || d.specialty === spec)
     && (!$('today').checked || (isBookable(d) && worksToday(d)))
-    && (!q || [d.name, d.specialty, d.qualifications, d.bio].join(' ').toLowerCase().includes(q)));
-  $('list').innerHTML = list.length ? list.map(doctorCard).join('') : '<p class="muted">No doctors match your search.</p>';
+    && (!q || [d.name, d.specialty, d.qualifications, d.bio, d.title, d.conditions || ''].join(' ').toLowerCase().includes(q)));
+  const soon = d => { const n = nextAvailable(d); return n ? n.date + n.time : 'z'; };
+  const by = { soon: (a, b) => soon(a).localeCompare(soon(b)), name: (a, b) => a.name.replace(/^(Asst\.\s*Prof\.\s*)?(Dr|Dt|Ms)\.?\s*/i, '').localeCompare(b.name.replace(/^(Asst\.\s*Prof\.\s*)?(Dr|Dt|Ms)\.?\s*/i, '')),
+    'fee-asc': (a, b) => (a.fee || 1e9) - (b.fee || 1e9), 'fee-desc': (a, b) => (b.fee || 0) - (a.fee || 0) }[$('sort').value];
+  list.sort(by);
+  $('count').textContent = `${list.length} doctor${list.length === 1 ? '' : 's'} found`;
+  $('list').innerHTML = list.length ? list.map(doctorCard).join('') : `<div class="card empty" style="grid-column:1/-1"><h3>No doctors match your search</h3><p class="muted">Try another word, clear the filters, or call us on ${esc(HOSPITAL.phone1)}.</p><button class="btn outline small" onclick="$('q').value='';$('today').checked=false;spec='';draw()">Clear search</button></div>`;
   const specs = [...new Set(all.map(d => d.specialty))];
   $('chips').innerHTML = ['', ...specs].map(s => `<button class="chip ${s === spec ? 'active' : ''}" data-s="${esc(s)}">${s ? esc(s) : 'All'}</button>`).join('');
 }
 $('chips').onclick = e => { const b = e.target.closest('.chip'); if (!b) return; spec = b.dataset.s; draw(); };
-$('q').oninput = draw; $('today').onchange = draw;
+$('q').oninput = draw; $('today').onchange = draw; $('sort').onchange = draw;
+const q0 = new URLSearchParams(location.search).get('q'); if (q0) $('q').value = q0;
+$('list').innerHTML = skeletonCards(6);
 loadSite().then(() => $('prov').innerHTML = provisionalNote());
 rpc('amc_doctors').then(d => { all = d; draw(); }).catch(e => $('list').innerHTML = `<p class="muted">${esc(e.message)}</p>`);
 </script>

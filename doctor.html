@@ -16,8 +16,8 @@
   <link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="stylesheet" href="styles.css?v=202611231026">
-  <script src="i18n.js?v=202611231026"></script>
+  <link rel="stylesheet" href="styles.css?v=202611231046">
+  <script src="i18n.js?v=202611231046"></script>
 </head>
 <body>
 <div id="site-header"></div>
@@ -28,8 +28,8 @@
 </section>
 </main>
 <div id="site-footer"></div>
-<script src="common.js?v=202611231026"></script>
-<script src="charts.js?v=202611231026"></script>
+<script src="common.js?v=202611231046"></script>
+<script src="charts.js?v=202611231046"></script>
 <script>
 const id = Number(new URLSearchParams(location.search).get('id'));
 const wrap = document.getElementById('wrap');
@@ -38,7 +38,7 @@ rpc('amc_doctor', { p_id: id }).then(d => {
   const todayKey = ['sun','mon','tue','wed','thu','fri','sat'][new Date(todayPK() + 'T00:00:00').getDay()];
   const bookable = isBookable(d);
   wrap.innerHTML = `
-  <p class="small"><a href="doctors.html">← All doctors</a></p>
+  ${crumbsHTML([['doctors.html', 'Doctors'], [null, d.name]])}
   <div class="profile">
     <div>
       <div class="card">
@@ -79,6 +79,7 @@ rpc('amc_doctor', { p_id: id }).then(d => {
         <table class="timetable">${DAY_ORDER.map(k => `<tr class="${k === todayKey ? 'today' : ''}"><td>${DAY_FULL[k]}</td>
           <td style="text-align:right">${d.schedule[k] ? fmtTime(d.schedule[k][0]) + ' – ' + fmtTime(d.schedule[k][1]) : '<span class="muted">Off</span>'}</td></tr>`).join('')}</table>
         ${d.leaves.length ? `<div class="alert info" style="margin:14px 0 0">On leave: ${d.leaves.slice(0, 6).map(x => fmtDate(x)).join(', ')}${d.leaves.length > 6 ? '…' : ''}</div>` : ''}
+        ${isBookable(d) ? `<div class="next-box"><h4>Next available times</h4><div id="next-slots"><span class="sk sk-btn"></span></div></div>` : ''}
         ${isBookable(d) ? '<div style="margin-top:14px">' + provisionalNote(true) + '</div>' : ''}
         <div style="display:grid;gap:10px;margin-top:6px">
           ${bookable ? `<a class="btn" href="book.html?doctor=${d.id}">Book Appointment</a>` : ''}
@@ -92,6 +93,12 @@ rpc('amc_doctor', { p_id: id }).then(d => {
   if (dc) barChart(dc, DAY_ORDER.filter(k => d.schedule[k]).map(k => ({ label: DAY_FULL[k], value: weeklyHours({ schedule: { x: d.schedule[k] } }),
     tip: `${DAY_FULL[k]}: ${fmtTime(d.schedule[k][0])} – ${fmtTime(d.schedule[k][1])}` })), { unit: 'hours', caption: 'Hours available each day' });
   loadSite().then(() => { const p = document.querySelector('.sticky .prov'); if (p) p.outerHTML = provisionalNote(true); });
+  const nx = nextAvailable(d);
+  if (nx) rpc('amc_slots', { p_doctor_id: d.id, p_date: nx.date }).then(sl => {
+    const free = sl.filter(x => x.available).slice(0, 6), day = nx.dayOffset === 0 ? 'Today' : nx.dayOffset === 1 ? 'Tomorrow' : fmtDate(nx.date);
+    document.getElementById('next-slots').innerHTML = free.length ? `<div class="muted small" style="margin-bottom:8px">${esc(day)}</div><div class="slots">${free.map(x =>
+      `<a class="slot" href="book.html?doctor=${d.id}&date=${nx.date}&time=${x.time}">${fmtTime(x.time)}</a>`).join('')}</div>` : '<p class="muted small">No free times on the next clinic day. Choose another day when booking.</p>';
+  }).catch(() => { document.getElementById('next-slots').innerHTML = ''; });
   document.getElementById('share').onclick = async () => {
     const data = { title: d.name, text: `${d.name} – ${d.specialty} at Ali Medical Complex, Multan`, url: location.href };
     try { if (navigator.share) await navigator.share(data); else { await navigator.clipboard.writeText(location.href); alert('Link copied.'); } } catch {}

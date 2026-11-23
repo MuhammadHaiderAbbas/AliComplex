@@ -16,8 +16,8 @@
   <link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="stylesheet" href="styles.css?v=202611231026">
-  <script src="i18n.js?v=202611231026"></script>
+  <link rel="stylesheet" href="styles.css?v=202611231046">
+  <script src="i18n.js?v=202611231046"></script>
 </head>
 <body>
 <div id="site-header"></div>
@@ -35,10 +35,11 @@
 </section>
 </main>
 <div id="site-footer"></div>
-<script src="common.js?v=202611231026"></script>
+<script src="common.js?v=202611231046"></script>
 <script>
 function render(docs) {
-  document.getElementById('blocks').innerHTML = SPECIALTIES.map(s => {
+  const slug = s => s.name.toLowerCase().replace(/[^a-z]+/g, '-');
+  document.getElementById('blocks').innerHTML = `<div class="svc-grid">${SPECIALTIES.map(s => `<a class="svc-tile reveal" href="#${slug(s)}"><span class="ico-badge">${icon(s.icon)}</span><b>${s.name}</b><small>${docs.filter(d => s.key && d.specialty.toLowerCase().includes(s.key.toLowerCase())).length || ''}</small></a>`).join('')}</div>` + SPECIALTIES.map(s => {
     const ds = s.key ? docs.filter(d => d.specialty.toLowerCase().includes(s.key.toLowerCase())) : [];
     const id = s.name.toLowerCase().replace(/[^a-z]+/g, '-');
     return `<div class="service-block" id="${id}">

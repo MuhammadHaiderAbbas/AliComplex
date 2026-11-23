@@ -154,6 +154,7 @@ const ICON_PATHS = {
   arrow: '<path d="M5 12h14M13 6l6 6-6 6"/>',
   image: '<rect x="3" y="4" width="18" height="16" rx="2.5"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 9"/>',
   hospital: '<path d="M3 21h18M5 21V7l7-4 7 4v14"/><path d="M10 21v-4h4v4M12 8v4M10 10h4"/>',
+  menu: '<path d="M4 7h16M4 12h16M4 17h16"/>',
   info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>',
   drop: '<path d="M12 2.5s6.5 7.2 6.5 12a6.5 6.5 0 0 1-13 0c0-4.8 6.5-12 6.5-12z"/><path d="M9 15a3 3 0 0 0 3 3"/>'
 };
@@ -201,6 +202,7 @@ function doctorCard(d) {
       ${d.experience ? `<div>${icon('star')}<span>Experience</span><b>${d.experience} yrs</b></div>` : ''}
     </div>
     <div class="timing">${icon('clock')}<span>${esc(scheduleText(d.schedule))}</span>${today ? '<span class="pill green">Available today</span>' : ''}</div>
+    ${nextAvailable(d) ? `<div class="next-av">${icon('calendar')}<span>Next available: <b>${esc(nextAvailableText(d))}</b></span></div>` : ''}
     <div class="card-actions">
       <a class="btn outline" href="doctor.html?id=${d.id}">View Profile</a>
       ${isBookable(d) ? `<a class="btn" href="book.html?doctor=${d.id}">Book</a>` : `<a class="btn" href="${tel(HOSPITAL.phone1)}">Call to Book</a>`}
@@ -243,57 +245,127 @@ function fillSite() {
 }
 
 // ---------- header / footer ----------
+// ---------- next available time (from the weekly timetable) ----------
+function nextAvailable(d, days = 21) {
+  if (!isBookable(d)) return null;
+  const keys = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+  const now = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Karachi', hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date());
+  const [nh, nm] = now.split(':').map(Number), nowMin = nh * 60 + nm;
+  const start = new Date(todayPK() + 'T00:00:00');
+  for (let i = 0; i < days; i++) {
+    const dt = new Date(start); dt.setDate(dt.getDate() + i);
+    const r = d.schedule[keys[dt.getDay()]]; if (!r) continue;
+    const [sh, sm] = r[0].split(':').map(Number), [eh, em] = r[1].split(':').map(Number);
+    let t = sh * 60 + sm; const end = eh * 60 + em, step = d.slot_minutes || 20;
+    if (i === 0) { if (nowMin >= end - step) continue; while (t <= nowMin) t += step; }
+    const hhmm = `${String(Math.floor(t / 60)).padStart(2, '0')}:${String(t % 60).padStart(2, '0')}`;
+    return { date: dt.toLocaleDateString('en-CA'), time: hhmm, dayOffset: i };
+  }
+  return null;
+}
+function nextAvailableText(d) {
+  const n = nextAvailable(d); if (!n) return '';
+  const day = n.dayOffset === 0 ? 'Today' : n.dayOffset === 1 ? 'Tomorrow' : new Date(n.date + 'T00:00:00').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+  return `${day}, ${fmtTime(n.time)}`;
+}
+
+// ---------- small UI helpers ----------
+function skeletonCards(n = 3) {
+  return Array.from({ length: n }, () => `<div class="card sk-card" aria-hidden="true"><div class="sk-row"><span class="sk sk-av"></span><span style="flex:1"><span class="sk sk-line w60"></span><span class="sk sk-line w40"></span></span></div><span class="sk sk-line"></span><span class="sk sk-line w80"></span><span class="sk sk-btn"></span></div>`).join('');
+}
+function toast(msg, type = 'ok') {
+  let box = document.getElementById('toasts');
+  if (!box) { box = document.createElement('div'); box.id = 'toasts'; box.setAttribute('role', 'status'); document.body.appendChild(box); }
+  const t = document.createElement('div'); t.className = 'toast ' + type; t.textContent = msg; box.appendChild(t);
+  setTimeout(() => t.classList.add('out'), 3200); setTimeout(() => t.remove(), 3700);
+}
+function crumbsHTML(items) {
+  return `<nav class="crumbs" aria-label="Breadcrumb"><a href="index.html">Home</a>${items.map(([h, t]) => ` <span aria-hidden="true">›</span> ${h ? `<a href="${h}">${esc(t)}</a>` : `<span aria-current="page">${esc(t)}</span>`}`).join('')}</nav>`;
+}
+
+// ---------- header / footer ----------
+const NAV = [['index.html', 'Home', 'hospital'], ['about.html', 'About', 'info'], ['team.html', 'Our Team', 'users'], ['doctors.html', 'Doctors', 'stethoscope'],
+  ['services.html', 'Services', 'clipboard'], ['faq.html', 'FAQs', 'chat'], ['contact.html', 'Contact', 'phone'], ['my-booking.html', 'My Booking', 'calendar']];
 function renderChrome() {
   const here = location.pathname.split('/').pop() || 'index.html';
-  const nav = [['index.html', 'Home'], ['about.html', 'About'], ['team.html', 'Our Team'], ['doctors.html', 'Doctors'], ['services.html', 'Services'], ['faq.html', 'FAQs'], ['contact.html', 'Contact'], ['my-booking.html', 'My Booking']];
+  const ur = typeof LANG !== 'undefined' && LANG === 'ur';
   const header = document.getElementById('site-header');
   if (header) header.innerHTML = `
     <a class="skip" href="#main">Skip to content</a>
     ${HOSPITAL.announcement ? `<div class="announce" role="status">📢 ${esc(HOSPITAL.announcement)}</div>` : ''}
     <div class="topbar"><div class="container">
-      <span>📍 ${esc(HOSPITAL.address)}</span>
-      <span>📞 <a href="${tel(HOSPITAL.phone1)}">${esc(HOSPITAL.phone1)}</a>${HOSPITAL.phone2 ? `<span class="hide-sm"> · <a href="${tel(HOSPITAL.phone2)}">${esc(HOSPITAL.phone2)}</a></span>` : ''}</span>
+      <span class="tb-item">${icon('pin')} ${esc(HOSPITAL.address)}</span>
+      <span class="tb-item hide-sm">${icon('clock')} OPD: Monday – Saturday</span>
+      <span class="tb-item">${icon('phone')} <a href="${tel(HOSPITAL.phone1)}">${esc(HOSPITAL.phone1)}</a>${HOSPITAL.phone2 ? `<span class="hide-sm"> · <a href="${tel(HOSPITAL.phone2)}">${esc(HOSPITAL.phone2)}</a></span>` : ''}</span>
     </div></div>
     <header class="site"><div class="container">
       <a class="brand" href="index.html"><img class="logo-svg" src="brand/logo-mark.svg" alt="" width="44" height="46"><span>${HOSPITAL.name}<small>Suraj Miani Road, Multan</small></span></a>
-      <div class="head-right">
-        <button type="button" class="lang-btn" data-no-tr onclick="setLang(typeof LANG !== 'undefined' && LANG === 'ur' ? 'en' : 'ur')" aria-label="${typeof LANG !== 'undefined' && LANG === 'ur' ? 'Switch to English' : 'اردو میں دیکھیں'}">${typeof LANG !== 'undefined' && LANG === 'ur' ? 'English' : 'اردو'}</button>
-        <button class="menu-btn" aria-label="Open menu" aria-expanded="false">☰</button>
-      </div>
       <nav class="main" aria-label="Main">
-        ${nav.map(([h, t]) => `<a href="${h}"${here === h ? ' class="active" aria-current="page"' : ''}>${t}</a>`).join('')}
-        <a class="btn small" href="book.html">Book Appointment</a>
+        ${NAV.map(([h, t]) => `<a href="${h}"${here === h ? ' class="active" aria-current="page"' : ''}>${t}</a>`).join('')}
       </nav>
-    </div></header>`;
-  const mb = document.querySelector('.menu-btn');
-  if (mb) mb.onclick = () => { const n = document.querySelector('nav.main'); n.classList.toggle('open'); mb.setAttribute('aria-expanded', n.classList.contains('open')); };
+      <div class="head-right">
+        <a class="btn small head-book" href="book.html">${icon('calendar')}<span>Book Appointment</span></a>
+        <button type="button" class="lang-btn" data-no-tr onclick="setLang(typeof LANG !== 'undefined' && LANG === 'ur' ? 'en' : 'ur')" aria-label="${ur ? 'Switch to English' : 'اردو میں دیکھیں'}">${ur ? 'English' : 'اردو'}</button>
+        <button class="menu-btn" aria-label="Open menu" aria-expanded="false" aria-controls="drawer">${icon('menu')}</button>
+      </div>
+    </div></header>
+    <div class="drawer-bg" hidden></div>
+    <aside class="drawer" id="drawer" aria-label="Menu" aria-hidden="true">
+      <div class="drawer-head"><img src="brand/logo-mark.svg" alt="" width="34" height="36"><b>${HOSPITAL.name}</b><button class="drawer-x" aria-label="Close menu">✕</button></div>
+      <nav>${NAV.map(([h, t, ic]) => `<a href="${h}"${here === h ? ' class="active" aria-current="page"' : ''}>${icon(ic)}<span>${t}</span></a>`).join('')}</nav>
+      <a class="btn" href="book.html" style="width:100%">${icon('calendar')}Book Appointment</a>
+      <div class="drawer-foot"><a href="${tel(HOSPITAL.phone1)}">${icon('phone')} ${esc(HOSPITAL.phone1)}</a><a href="${waLink()}" target="_blank" rel="noopener">${icon('chat')} WhatsApp</a></div>
+    </aside>`;
+  const mb = document.querySelector('.menu-btn'), dr = document.getElementById('drawer'), bg = document.querySelector('.drawer-bg');
+  const setDrawer = open => { if (!dr) return; dr.classList.toggle('open', open); dr.setAttribute('aria-hidden', !open); bg.hidden = !open; mb.setAttribute('aria-expanded', open); document.body.classList.toggle('no-scroll', open); if (open) dr.querySelector('a').focus(); };
+  if (mb) { mb.onclick = () => setDrawer(true); dr.querySelector('.drawer-x').onclick = () => setDrawer(false); bg.onclick = () => setDrawer(false);
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && dr.classList.contains('open')) { setDrawer(false); mb.focus(); } }); }
+
+  // breadcrumbs on inner pages
+  const ph = document.querySelector('.page-head .container');
+  if (ph && !ph.querySelector('.crumbs')) { const h1 = ph.querySelector('h1'); if (h1) ph.insertAdjacentHTML('afterbegin', crumbsHTML([[null, h1.textContent.trim()]])); }
 
   const footer = document.getElementById('site-footer');
   if (footer) footer.innerHTML = `
+    <div class="pre-foot"><div class="container">
+      <div class="pf-item">${icon('phone')}<div><b>Call us</b><a href="${tel(HOSPITAL.phone1)}">${esc(HOSPITAL.phone1)}</a></div></div>
+      <div class="pf-item">${icon('clock')}<div><b>OPD hours</b><span>Monday – Saturday</span></div></div>
+      <div class="pf-item">${icon('pin')}<div><b>Visit us</b><a href="${HOSPITAL.mapsUrl}" target="_blank" rel="noopener">Suraj Miani Road, Multan</a></div></div>
+      <a class="btn light" href="book.html">${icon('calendar')}Book Appointment</a>
+    </div></div>
     <footer class="site"><div class="container">
       <div class="cols">
         <div><h4 class="foot-brand"><img class="logo-svg sm" src="brand/logo-mark-white.svg" alt="" width="34" height="36">${HOSPITAL.name}</h4><p>Specialists, allied health, laboratory and pharmacy under one roof for families in Multan.</p>
-          <p>${HOSPITAL.facebook ? `<a href="${esc(HOSPITAL.facebook)}" target="_blank" rel="noopener">Facebook</a> · ` : ''}<a href="${waLink()}" target="_blank" rel="noopener">WhatsApp</a></p></div>
+          <div class="socials">${HOSPITAL.facebook ? `<a href="${esc(HOSPITAL.facebook)}" target="_blank" rel="noopener" aria-label="Facebook">f</a>` : ''}<a href="${waLink()}" target="_blank" rel="noopener" aria-label="WhatsApp">${icon('chat')}</a><a href="${tel(HOSPITAL.phone1)}" aria-label="Call">${icon('phone')}</a><a href="${HOSPITAL.mapsUrl}" target="_blank" rel="noopener" aria-label="Directions">${icon('pin')}</a></div></div>
         <div><h4>Hospital</h4><ul>
           <li><a href="about.html">About Us</a></li><li><a href="team.html">Our Team</a></li><li><a href="doctors.html">Our Doctors</a></li>
           <li><a href="services.html">Services</a></li><li><a href="contact.html">Contact</a></li></ul></div>
         <div><h4>Patients</h4><ul>
           <li><a href="book.html">Book Appointment</a></li><li><a href="my-booking.html">Check / Cancel Booking</a></li>
           <li><a href="my-booking.html#review">Leave a Review</a></li><li><a href="faq.html">FAQs</a></li><li><a href="verify.html">Verify a Document</a></li></ul></div>
-        <div><h4>Contact</h4><ul>
-          <li>${esc(HOSPITAL.address)}</li>
-          <li><a href="${tel(HOSPITAL.phone1)}">${esc(HOSPITAL.phone1)}</a></li>
-          ${HOSPITAL.phone2 ? `<li><a href="${tel(HOSPITAL.phone2)}">${esc(HOSPITAL.phone2)}</a></li>` : ''}
-          ${HOSPITAL.email ? `<li><a href="mailto:${esc(HOSPITAL.email)}">${esc(HOSPITAL.email)}</a></li>` : ''}
-          <li><a href="${HOSPITAL.mapsUrl}" target="_blank" rel="noopener">Get Directions</a></li></ul></div>
+        <div><h4>Contact</h4><ul class="foot-contact">
+          <li>${icon('pin')}<span>${esc(HOSPITAL.address)}</span></li>
+          <li>${icon('phone')}<a href="${tel(HOSPITAL.phone1)}">${esc(HOSPITAL.phone1)}</a></li>
+          ${HOSPITAL.phone2 ? `<li>${icon('phone')}<a href="${tel(HOSPITAL.phone2)}">${esc(HOSPITAL.phone2)}</a></li>` : ''}
+          ${HOSPITAL.email ? `<li>${icon('chat')}<a href="mailto:${esc(HOSPITAL.email)}">${esc(HOSPITAL.email)}</a></li>` : ''}
+          <li>${icon('clock')}<span>OPD: Monday – Saturday</span></li></ul></div>
       </div>
-      <div class="copy">© ${new Date().getFullYear()} ${HOSPITAL.name}, Multan. All rights reserved. · <a href="admin.html">Staff Login</a></div>
+      <div class="copy"><span>© ${new Date().getFullYear()} ${HOSPITAL.name}, Multan. All rights reserved.</span><span><a href="verify.html">Verify a Document</a> · <a href="admin.html">Staff Login</a></span></div>
     </div></footer>
+    <button class="to-top" aria-label="Back to top" hidden>↑</button>
     <a class="wa-float" href="${waLink('Assalam o Alaikum, I want to ask about an appointment at Ali Medical Complex.')}" target="_blank" rel="noopener" aria-label="Chat on WhatsApp">
       <svg viewBox="0 0 32 32" width="30" height="30" fill="#fff" aria-hidden="true"><path d="M16 3C8.8 3 3 8.7 3 15.8c0 2.3.6 4.5 1.8 6.5L3 29l6.9-1.8c1.9 1 4 1.6 6.1 1.6 7.2 0 13-5.7 13-12.8S23.2 3 16 3zm0 23.4c-1.9 0-3.8-.5-5.4-1.5l-.4-.2-4.1 1.1 1.1-4-.3-.4c-1.1-1.7-1.6-3.6-1.6-5.6 0-5.9 4.9-10.6 10.8-10.6s10.8 4.8 10.8 10.6S21.9 26.4 16 26.4zm5.9-7.9c-.3-.2-1.9-.9-2.2-1s-.5-.2-.7.2-.8 1-1 1.2-.4.2-.7.1c-.3-.2-1.4-.5-2.6-1.6-1-.9-1.6-1.9-1.8-2.2s0-.5.1-.7l.5-.6.3-.5c.1-.2 0-.4 0-.6l-1-2.4c-.3-.6-.5-.5-.7-.5h-.6c-.2 0-.6.1-.9.4-.3.3-1.2 1.1-1.2 2.7s1.2 3.2 1.4 3.4c.2.2 2.4 3.6 5.8 5 .8.3 1.4.5 1.9.7.8.3 1.5.2 2.1.1.6-.1 1.9-.8 2.2-1.5.3-.7.3-1.4.2-1.5-.1-.2-.3-.3-.6-.4z"/></svg>
     </a>`;
+  const tt = document.querySelector('.to-top');
+  if (tt) tt.onclick = () => window.scrollTo({ top: 0, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
   fillSite();
 }
+// slimmer header and back-to-top once the page is scrolled
+window.addEventListener('scroll', () => {
+  const y = window.scrollY;
+  document.body.classList.toggle('scrolled', y > 40);
+  const tt = document.querySelector('.to-top'); if (tt) tt.hidden = y < 600;
+}, { passive: true });
 
 document.addEventListener('DOMContentLoaded', () => {
   if (!document.getElementById('site-header')) return;

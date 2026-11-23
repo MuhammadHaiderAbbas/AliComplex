@@ -16,8 +16,8 @@
   <link rel="icon" href="favicon-32.png" type="image/png" sizes="32x32">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="manifest" href="manifest.webmanifest">
-  <link rel="stylesheet" href="styles.css?v=202611231026">
-  <script src="i18n.js?v=202611231026"></script>
+  <link rel="stylesheet" href="styles.css?v=202611231046">
+  <script src="i18n.js?v=202611231046"></script>
 </head>
 <body>
 <div id="site-header"></div>
@@ -39,15 +39,14 @@
     </div>
 
     <div id="step2" class="hidden">
-      <div class="summary" id="doc-summary"></div>
+      <div class="doc-sum" id="doc-summary"></div>
       <div id="prov-book"></div>
-      <div class="field" style="max-width:280px">
-        <label for="date">Select date</label>
-        <input type="date" id="date">
-        <div class="muted small" style="margin-top:4px" id="days-hint"></div>
-      </div>
-      <label>Available times</label>
-      <div class="slots" id="slots"><p class="muted">Pick a date to see times.</p></div>
+      <label>Select date</label>
+      <div class="date-strip" id="date-strip" role="radiogroup" aria-label="Date"></div>
+      <div class="other-date"><label for="date" class="muted small" style="font-weight:500">Or pick another date</label>
+        <input type="date" id="date"><span class="muted small" id="days-hint"></span></div>
+      <label style="margin-top:18px">Available times</label>
+      <div id="slots"><p class="muted">Pick a date to see times.</p></div>
       <div style="display:flex;gap:10px;margin-top:24px">
         <button class="btn outline" onclick="go(1)">Back</button>
         <button class="btn" id="to3" disabled onclick="go(3)">Continue</button>
@@ -92,7 +91,7 @@
 </section>
 </main>
 <div id="site-footer"></div>
-<script src="common.js?v=202611231026"></script>
+<script src="common.js?v=202611231046"></script>
 <script>
 let doctors = [], doc = null, slot = null, booked = null;
 const $ = id => document.getElementById(id);
@@ -106,6 +105,22 @@ function go(n) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+function docSummary() {
+  return `<div class="ds-row">${avatarHTML(doc, 'avatar-lg')}<div><b><a href="doctor.html?id=${doc.id}">${esc(doc.name)}</a></b><div class="muted small">${esc(doc.specialty)}${doc.title ? ' · ' + esc(doc.title) : ''}</div>
+    <div class="ds-facts"><span>${icon('wallet')} Rs. ${doc.fee.toLocaleString()}</span><span>${icon('clock')} ${esc(scheduleText(doc.schedule))}</span></div></div>
+    <button type="button" class="btn outline small" onclick="go(1)">Change</button></div>`;
+}
+function dateStrip() {
+  const keys = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'], start = new Date(todayPK() + 'T00:00:00'), sel = $('date').value;
+  let html = '';
+  for (let i = 0; i < 14; i++) {
+    const d = new Date(start); d.setDate(d.getDate() + i);
+    const v = d.toLocaleDateString('en-CA'), works = !!doc.schedule[keys[d.getDay()]];
+    html += `<button type="button" class="ds-day ${v === sel ? 'on' : ''}" data-d="${v}" ${works ? '' : 'disabled'} role="radio" aria-checked="${v === sel}">
+      <small>${i === 0 ? 'Today' : i === 1 ? 'Tomorrow' : DAY_NAMES[keys[d.getDay()]]}</small><b>${d.getDate()}</b><small>${d.toLocaleDateString('en-GB', { month: 'short' })}</small></button>`;
+  }
+  $('date-strip').innerHTML = html;
+}
 function summaryHTML() {
   return `<div><span class="muted">Doctor</span><b><a href="doctor.html?id=${doc.id}">${esc(doc.name)}</a></b></div>
     <div><span class="muted">Specialty</span><span>${esc(doc.specialty)}</span></div>
@@ -118,14 +133,17 @@ function pickDoctor(id) {
   doc = doctors.find(d => d.id === id);
   if (!doc) return;
   slot = null; $('to3').disabled = true;
-  $('doc-summary').innerHTML = summaryHTML();
-  $('days-hint').textContent = 'Available: ' + scheduleText(doc.schedule);
+  $('doc-summary').innerHTML = docSummary();
+  $('days-hint').textContent = '';
   loadSite().then(() => $('prov-book').innerHTML = provisionalNote(true));
   const keys = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
   const d = new Date(todayPK() + 'T00:00:00');
   for (let i = 0; i < 14 && !doc.schedule[keys[d.getDay()]]; i++) d.setDate(d.getDate() + 1);
   $('date').value = d.toLocaleDateString('en-CA');
-  loadSlots();
+  const nx = nextAvailable(doc); if (nx) $('date').value = nx.date;
+  const pd = new URLSearchParams(location.search).get('date'); if (pd && !pickDoctor.used) $('date').value = pd;
+  pickDoctor.used = true;
+  dateStrip(); loadSlots();
   go(2);
 }
 
@@ -133,7 +151,8 @@ async function loadSlots() {
   slot = null; $('to3').disabled = true;
   const date = $('date').value;
   if (!date) return;
-  $('slots').innerHTML = '<p class="muted">Loading…</p>';
+  dateStrip();
+  $('slots').innerHTML = '<div class="slots">' + '<span class="sk sk-btn"></span>'.repeat(8) + '</div>';
   try {
     const slots = await rpc('amc_slots', { p_doctor_id: doc.id, p_date: date });
     if (!slots.length) {
@@ -144,8 +163,14 @@ async function loadSlots() {
       $('slots').innerHTML = '<p class="muted" style="grid-column:1/-1">All slots are booked on this date. Please choose another day.</p>';
       return;
     }
-    $('slots').innerHTML = slots.map(s =>
-      `<button type="button" class="slot" data-t="${s.time}" ${s.available ? '' : 'disabled title="Booked"'}>${fmtTime(s.time)}</button>`).join('');
+    const groups = [['Morning', 0, 12 * 60], ['Afternoon', 12 * 60, 17 * 60], ['Evening', 17 * 60, 24 * 60]];
+    const mins = t => { const [h, m] = t.split(':').map(Number); return h * 60 + m; };
+    $('slots').innerHTML = groups.map(([g, a, b]) => {
+      const gs = slots.filter(x => mins(x.time) >= a && mins(x.time) < b); if (!gs.length) return '';
+      return `<div class="slot-group"><div class="sg-head">${g} <span class="muted small">${gs.filter(x => x.available).length} free</span></div><div class="slots">${gs.map(x =>
+        `<button type="button" class="slot" data-t="${x.time}" ${x.available ? '' : 'disabled title="Booked"'}>${fmtTime(x.time)}</button>`).join('')}</div></div>`; }).join('');
+    const pt = new URLSearchParams(location.search).get('time');
+    if (pt && !loadSlots.used) { loadSlots.used = true; const b = document.querySelector(`.slot[data-t="${pt}"]:not([disabled])`); if (b) b.click(); }
   } catch (e) { $('slots').innerHTML = `<p class="muted">${esc(e.message)}</p>`; }
 }
 
@@ -157,6 +182,7 @@ $('slots').addEventListener('click', e => {
   slot = b.dataset.t; $('to3').disabled = false;
 });
 $('date').addEventListener('change', loadSlots);
+$('date-strip').addEventListener('click', e => { const b = e.target.closest('.ds-day'); if (!b || b.disabled) return; $('date').value = b.dataset.d; loadSlots(); });
 
 $('step3').addEventListener('submit', async e => {
   e.preventDefault();
