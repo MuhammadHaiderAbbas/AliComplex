@@ -1,8 +1,0 @@
----
-# cPanel "Git Version Control" deploy: copies the website into public_html.
-# In cPanel: Git Version Control > Manage > Pull or Deploy > "Update from Remote", then "Deploy HEAD Commit".
-deployment:
-  tasks:
-    - export DEPLOYPATH=$HOME/public_html/
-    - /bin/mkdir -p $DEPLOYPATH
-    - /bin/cp -R *.html *.js *.css *.png *.svg *.xml *.webmanifest .htaccess brand $DEPLOYPATH

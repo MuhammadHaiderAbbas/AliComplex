@@ -2,8 +2,8 @@
 
 Website for Ali Medical Complex, Chungi No. 1, Suraj Miani Road, Multan, with online appointment booking and a staff panel.
 
-**Live site:** https://muhammadhaiderabbas.github.io/AliComplex/
-**Staff panel:** https://muhammadhaiderabbas.github.io/AliComplex/admin.html
+**Live site:** https://alimedicalcomplex.health/
+**Staff panel:** https://alimedicalcomplex.health/admin.html
 
 Runs completely free: the pages are hosted on GitHub Pages and bookings are stored in Supabase (free plan).
 
@@ -80,11 +80,9 @@ Every public page has an **English / اردو** button (top right). Urdu switche
 ## Note on Supabase free plan
 Free Supabase projects pause after about a week with no activity. Regular bookings keep it active; if it ever pauses, restore it from the Supabase dashboard.
 
-## Hosting on Namecheap (cPanel)
-The site is static files plus Supabase, so any Apache hosting works.
-1. Namecheap → Hosting List → **Go to cPanel** → **Git™ Version Control** → **Create**.
-2. Turn on *Clone a Repository*. Clone URL: `https://github.com/MuhammadHaiderAbbas/AliComplex.git`. Repository path: `repositories/AliComplex`. Name: `AliComplex`. Create.
-3. **Manage** → **Pull or Deploy** → **Deploy HEAD Commit**. `.cpanel.yml` copies the site into `public_html`.
-4. cPanel → **SSL/TLS Status** → **Run AutoSSL** so https works.
-5. After each future update: Git™ Version Control → Manage → Pull or Deploy → **Update from Remote**, then **Deploy HEAD Commit**.
-`.htaccess` forces https, removes `www.`, serves `404.html`, and sets caching. `./set-domain.sh yourdomain.com` points built-in links at the domain.
+## Domain
+The site is hosted free on GitHub Pages and served at **https://alimedicalcomplex.health** (domain registered at Namecheap).
+- Namecheap → Domain List → Manage → Advanced DNS: four A records for `@` (185.199.108.153, 185.199.109.153, 185.199.110.153, 185.199.111.153) and a CNAME for `www` → `muhammadhaiderabbas.github.io.`
+- GitHub → repo Settings → Pages: custom domain `alimedicalcomplex.health` (kept in the `CNAME` file), **Enforce HTTPS** on.
+- The old address `muhammadhaiderabbas.github.io/AliComplex/` redirects to the domain.
+- `./set-domain.sh newdomain.com` updates built-in links if the domain ever changes.

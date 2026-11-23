@@ -15,7 +15,7 @@ const HOSPITAL = {
   email: '',
   facebook: '',
   opd_note: 'Monday – Saturday (timings vary by doctor)',
-  website: 'https://muhammadhaiderabbas.github.io/AliComplex/',
+  website: 'https://alimedicalcomplex.health/',
   legal_name: 'Ali Medical Complex',
   signatory_name: 'Dr. Shahid Javed Ch.',
   signatory_title: 'Director',
