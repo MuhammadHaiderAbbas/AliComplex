@@ -893,3 +893,6 @@ header.site .container, .topbar .container { max-width: 1320px; }
 @media (max-width: 1400px) and (min-width: 1181px) { header.site nav.main { gap: 16px; } header.site nav.main a { font-size: .9rem; } .brand small { display: none; } }
 main:has(> .cta:last-child) + #site-footer .pre-foot .btn { display: none; }
 main:has(> .cta:last-child) + #site-footer .pre-foot .container { grid-template-columns: repeat(3, 1fr); }
+@media (max-width: 900px) { main:has(> .cta:last-child) + #site-footer .pre-foot .container { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 560px) { main:has(> .cta:last-child) + #site-footer .pre-foot .container { grid-template-columns: 1fr; } }
+.pf-item > div { min-width: 0; }
