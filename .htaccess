@@ -1,0 +1,41 @@
+# Ali Medical Complex – settings for Apache hosting (Namecheap cPanel)
+
+# Always use the secure https:// address, and drop "www."
+RewriteEngine On
+RewriteCond %{HTTPS} !=on
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+RewriteRule ^ https://%1%{REQUEST_URI} [L,R=301]
+
+# Friendly "page not found" page
+ErrorDocument 404 /404.html
+
+# Don't list folder contents; keep project files private
+Options -Indexes
+<FilesMatch "^(README\.md|bump-version\.sh|\.cpanel\.yml|\.gitignore)$">
+  Require all denied
+</FilesMatch>
+
+# Correct file types
+AddType application/manifest+json .webmanifest
+AddType image/svg+xml .svg
+
+# Caching: pages always fresh; CSS/JS carry a ?v= version so they can be cached
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/html "access plus 0 seconds"
+  ExpiresByType text/css "access plus 30 days"
+  ExpiresByType application/javascript "access plus 30 days"
+  ExpiresByType image/svg+xml "access plus 30 days"
+  ExpiresByType image/png "access plus 30 days"
+</IfModule>
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css application/javascript image/svg+xml application/json
+</IfModule>
+
+# Basic security headers
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set X-Frame-Options "SAMEORIGIN"
+</IfModule>

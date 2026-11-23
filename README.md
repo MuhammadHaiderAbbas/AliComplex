@@ -79,3 +79,12 @@ Every public page has an **English / اردو** button (top right). Urdu switche
 
 ## Note on Supabase free plan
 Free Supabase projects pause after about a week with no activity. Regular bookings keep it active; if it ever pauses, restore it from the Supabase dashboard.
+
+## Hosting on Namecheap (cPanel)
+The site is static files plus Supabase, so any Apache hosting works.
+1. Namecheap → Hosting List → **Go to cPanel** → **Git™ Version Control** → **Create**.
+2. Turn on *Clone a Repository*. Clone URL: `https://github.com/MuhammadHaiderAbbas/AliComplex.git`. Repository path: `repositories/AliComplex`. Name: `AliComplex`. Create.
+3. **Manage** → **Pull or Deploy** → **Deploy HEAD Commit**. `.cpanel.yml` copies the site into `public_html`.
+4. cPanel → **SSL/TLS Status** → **Run AutoSSL** so https works.
+5. After each future update: Git™ Version Control → Manage → Pull or Deploy → **Update from Remote**, then **Deploy HEAD Commit**.
+`.htaccess` forces https, removes `www.`, serves `404.html`, and sets caching. `./set-domain.sh yourdomain.com` points built-in links at the domain.
