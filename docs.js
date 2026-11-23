@@ -94,7 +94,7 @@ function payslipHTML(s) {
       ${body}
       <tr class="tot"><th colspan="5">Gross Pay</th><td class="val">${Math.round(d.gross)}</td></tr>
       <tr class="tot"><th colspan="5">Net Amount</th><td class="val">${Math.round(d.net)}</td></tr>
-      <tr><td colspan="6" class="blank">${s.verify_code ? `<span class="ps-verify">Verification code ${esc(s.verify_code)}</span>` : ''}</td></tr>
+      <tr><td colspan="6" class="blank"><span class="ps-note">This is a system-generated payslip and does not require a signature or stamp.</span>${s.verify_code ? `<span class="ps-verify">Verification code ${esc(s.verify_code)}</span>` : ''}</td></tr>
     </table>
   </div>`;
 }

@@ -7,7 +7,7 @@
   <title>Staff Panel | Ali Medical Complex</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="preload" as="image" href="brand/logo-horizontal.svg">
-  <link rel="stylesheet" href="styles.css?v=202611231048">
+  <link rel="stylesheet" href="styles.css?v=202611231059">
   <style>
     body { background: var(--bg-soft); }
     .admin-bar { background: var(--primary-dark); color: #fff; }
@@ -15,8 +15,6 @@
     .admin-bar a { color: #fff; }
     .admin-bar .btn.outline { border-color: #fff; color: #fff; }
     .tabs { display: flex; gap: 6px; margin: 22px 0 18px; flex-wrap: wrap; }
-    .tabs button { background: #fff; border: 1px solid var(--border); padding: 9px 16px; border-radius: 8px; cursor: pointer; font-weight: 600; font-family: inherit; color: var(--text); }
-    .tabs button.active { background: var(--primary); color: #fff; border-color: var(--primary); }
     .tabs .count { background: var(--danger); color: #fff; border-radius: 10px; padding: 0 7px; font-size: .75rem; margin-left: 4px; }
     .kpis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 18px; }
     .kpi { background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
@@ -47,42 +45,58 @@
   </style>
 </head>
 <body>
-<div class="admin-bar"><div class="container">
-  <b style="display:flex;align-items:center;gap:10px"><img src="brand/logo-mark-white.svg" alt="" width="30" height="32">Ali Medical Complex · Staff Panel</b>
-  <span><a href="index.html" target="_blank">View site ↗</a> <button id="logout" class="btn small outline hidden" style="margin-left:12px">Log out</button></span>
-</div></div>
-
-<div class="container">
-  <form id="login" class="card" style="max-width:400px;margin:60px auto">
-    <h2>Staff Login</h2>
+<form id="login" class="login-screen">
+  <div class="login-card">
+    <img src="brand/logo-stacked.svg" alt="Ali Medical Complex" class="login-logo">
+    <h2>Staff Panel</h2>
+    <p class="muted small" style="margin-top:-6px">Sign in to manage appointments, doctors, payroll and the website.</p>
     <div id="login-msg"></div>
     <div class="field"><label for="pw">Password</label><input id="pw" type="password" autocomplete="current-password" required></div>
     <button class="btn" style="width:100%">Log in</button>
-  </form>
+    <p class="small center" style="margin:16px 0 0"><a href="index.html">← Back to website</a></p>
+  </div>
+</form>
 
-  <div id="app" class="hidden">
-    <div class="tabs" role="tablist">
-      <button class="active" data-tab="dash">Dashboard</button>
-      <button data-tab="appts">Appointments</button>
-      <button data-tab="doctors">Doctors &amp; Leave</button>
-      <button data-tab="enq">Enquiries <span class="count hidden" id="c-enq"></span></button>
-      <button data-tab="reviews">Reviews <span class="count hidden" id="c-rev"></span></button>
-      <button data-tab="team">Org Chart</button>
-      <button data-tab="payroll">Payroll 🔒</button>
-      <button data-tab="letters">Letters 🔒</button>
-      <button data-tab="settings">Settings</button>
+<div id="app" class="hidden admin-shell">
+  <aside class="side" id="side" aria-label="Staff menu">
+    <a class="side-brand" href="index.html" target="_blank"><img src="brand/logo-mark-white.svg" alt="" width="34" height="36"><span>Ali Medical Complex<small>Staff Panel</small></span></a>
+    <nav class="tabs" role="tablist">
+        <button class="active" data-tab="dash"><span class="ic-slot" data-icon="activity"></span><span class="nav-label">Dashboard</span></button>
+        <button data-tab="appts"><span class="ic-slot" data-icon="calendar"></span><span class="nav-label">Appointments</span></button>
+        <button data-tab="doctors"><span class="ic-slot" data-icon="stethoscope"></span><span class="nav-label">Doctors &amp; Leave</span></button>
+        <button data-tab="enq"><span class="ic-slot" data-icon="chat"></span><span class="nav-label">Enquiries</span><span class="count hidden" id="c-enq"></span></button>
+        <button data-tab="reviews"><span class="ic-slot" data-icon="star"></span><span class="nav-label">Reviews</span><span class="count hidden" id="c-rev"></span></button>
+        <button data-tab="team"><span class="ic-slot" data-icon="users"></span><span class="nav-label">Org Chart</span></button>
+        <button data-tab="payroll"><span class="ic-slot" data-icon="wallet"></span><span class="nav-label">Payroll</span><span class="ic-slot lock-ic" data-icon="lock"></span></button>
+        <button data-tab="letters"><span class="ic-slot" data-icon="clipboard"></span><span class="nav-label">Letters</span><span class="ic-slot lock-ic" data-icon="lock"></span></button>
+        <button data-tab="settings"><span class="ic-slot" data-icon="gear"></span><span class="nav-label">Settings</span></button>
+    </nav>
+    <div class="side-foot">
+      <a href="index.html" target="_blank"><span class="ic-slot" data-icon="external"></span>View website</a>
     </div>
-    <div id="msg"></div>
+  </aside>
+  <div class="side-bg" hidden></div>
+  <div class="admin-main">
+    <header class="topline">
+      <button type="button" class="side-toggle" aria-label="Open menu"><span class="ic-slot" data-icon="menu"></span></button>
+      <div class="tl-title"><h1 id="page-title">Dashboard</h1><small id="today-line" class="muted"></small></div>
+      <div class="tl-actions">
+        <a class="btn small outline" href="index.html" target="_blank"><span class="ic-slot" data-icon="external"></span><span class="hide-sm">View site</span></a>
+        <button id="logout" class="btn small hidden"><span class="ic-slot" data-icon="logout"></span><span class="hide-sm">Log out</span></button>
+      </div>
+    </header>
+    <div class="admin-content">
+    <div id="msg" aria-live="polite"></div>
 
     <!-- Dashboard -->
     <div id="tab-dash">
       <div class="kpis">
-        <div class="kpi"><div class="muted">Today’s appointments</div><div class="n" id="k-today">–</div></div>
-        <div class="kpi"><div class="muted">Pending confirmation</div><div class="n" id="k-pending">–</div></div>
-        <div class="kpi"><div class="muted">Upcoming</div><div class="n" id="k-upcoming">–</div></div>
-        <div class="kpi"><div class="muted">New enquiries</div><div class="n" id="k-enq">–</div></div>
-        <div class="kpi"><div class="muted">Reviews to approve</div><div class="n" id="k-rev">–</div></div>
-        <div class="kpi"><div class="muted">All-time bookings</div><div class="n" id="k-total">–</div></div>
+        <div class="kpi"><div class="muted">Today’s appointments</div><span class="kpi-ic"><span class="ic-slot" data-icon="calendar"></span></span><div class="n" id="k-today">–</div></div>
+        <div class="kpi"><div class="muted">Pending confirmation</div><span class="kpi-ic"><span class="ic-slot" data-icon="clock"></span></span><div class="n" id="k-pending">–</div></div>
+        <div class="kpi"><div class="muted">Upcoming</div><span class="kpi-ic"><span class="ic-slot" data-icon="activity"></span></span><div class="n" id="k-upcoming">–</div></div>
+        <div class="kpi"><div class="muted">New enquiries</div><span class="kpi-ic"><span class="ic-slot" data-icon="chat"></span></span><div class="n" id="k-enq">–</div></div>
+        <div class="kpi"><div class="muted">Reviews to approve</div><span class="kpi-ic"><span class="ic-slot" data-icon="star"></span></span><div class="n" id="k-rev">–</div></div>
+        <div class="kpi"><div class="muted">All-time bookings</div><span class="kpi-ic"><span class="ic-slot" data-icon="clipboard"></span></span><div class="n" id="k-total">–</div></div>
       </div>
       <div class="grid cols-2">
         <div class="card"><h3>Appointments per day</h3><p class="muted small" style="margin-top:-8px">Last 14 days and next 7 (today highlighted)</p>
@@ -496,12 +510,13 @@
         </div>
       </div>
     </div>
+    </div>
   </div>
 </div>
 
 <div id="print-area"></div>
-<script src="common.js?v=202611231048"></script>
-<script src="docs.js?v=202611231048"></script>
+<script src="common.js?v=202611231059"></script>
+<script src="docs.js?v=202611231059"></script>
 <script>
 const $ = id => document.getElementById(id);
 const SITE_KEYS = ['announcement', 'phone1', 'phone2', 'whatsapp', 'email', 'facebook', 'opd_note', 'legal_name', 'website', 'signatory_name', 'signatory_title', 'provisional_note'];
@@ -598,6 +613,11 @@ $('gal-admin').addEventListener('change', async e => {
 
 const loaders = { dash: loadDash, appts: loadAppts, doctors: () => Promise.all([loadDoctors(), loadLeaves()]), enq: loadEnq, reviews: loadReviews,
   team: loadTeam, payroll: () => office(loadPayroll), letters: () => office(loadLetters), settings: () => Promise.all([loadSettings(), loadAlerts(), loadGallery()]) };
+const sideOpen = o => { $('side').classList.toggle('open', o); document.querySelector('.side-bg').hidden = !o; };
+document.querySelector('.side-toggle').onclick = () => sideOpen(true);
+document.querySelector('.side-bg').onclick = () => sideOpen(false);
+$('today-line').textContent = new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Karachi' });
+document.querySelectorAll('.tabs button').forEach(b => b.addEventListener('click', () => { $('page-title').textContent = b.querySelector('.nav-label').textContent; sideOpen(false); window.scrollTo(0, 0); }));
 document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => {
   document.querySelectorAll('.tabs button').forEach(x => x.classList.toggle('active', x === b));
   Object.keys(loaders).forEach(k => $('tab-' + k).classList.toggle('hidden', k !== b.dataset.tab));
