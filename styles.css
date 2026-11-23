@@ -721,3 +721,32 @@ table.ss-pay tr.tot th { text-align: left; background: #fff; }
 table.ss-pay tr.tot td { font-weight: 700; font-size: 10.5pt; }
 table.ss-pay tr.net th, table.ss-pay tr.net td { background: var(--primary); color: #fff; border-color: #2b3a42; }
 table.ss-pay td.words { font-size: 9pt; background: #fbfcfe; }
+/* ===== Salary slip: landscape, plain, same layout as the hospital's sample ===== */
+.ps-page { position: relative; width: 297mm; min-height: 210mm; background: #fff; color: #1b1b1b; margin: 0 auto; padding: 10mm 18mm 12mm;
+  font-family: "Segoe UI", Calibri, Arial, sans-serif; box-shadow: 0 4px 24px rgba(0,0,0,.12); page: landscape; direction: ltr; text-align: left; }
+.ps-logo { text-align: center; margin-bottom: 2mm; }
+.ps-logo img { height: 30mm; width: auto; }
+.ps-title { text-align: right; font-size: 14pt; text-decoration: underline; text-underline-offset: 2px; margin: 0 9mm 3mm 0; }
+table.ps { width: 100%; border-collapse: collapse; font-size: 12.5pt; }
+table.ps th, table.ps td { border: .35mm solid #222; padding: 1.6mm 3mm; font-weight: 400; vertical-align: middle; }
+table.ps .hd { text-align: center; }
+table.ps .val { text-align: center; }
+table.ps .acc { text-align: left; letter-spacing: .3px; }
+table.ps tr.cols th { text-align: center; padding: 2.6mm 3mm; font-size: 13pt; }
+table.ps td.lbl { text-align: center; border-top: .35mm solid #222; border-bottom: .35mm solid #222; }
+table.ps td.amt { text-align: center; font-size: 11pt; }
+table.ps td.amt.i { font-style: italic; }
+table.ps tr.tot th { text-align: left; padding: 2mm 3mm; }
+table.ps tr.tot td { font-size: 13pt; }
+table.ps td.blank { height: 22mm; vertical-align: bottom; }
+.ps-verify { font-size: 7.5pt; color: #888; float: right; }
+.ps-stamp { position: absolute; top: 12mm; right: 18mm; color: #c0392b; border: .6mm solid #c0392b; padding: 1mm 4mm; font-weight: 700; letter-spacing: 2px; }
+@media print { .ps-page { box-shadow: none; margin: 0; break-after: page; -webkit-print-color-adjust: exact; print-color-adjust: exact; } .ps-page:last-child { break-after: auto; } }
+.ps-page { height: 210mm; min-height: 0; overflow: hidden; padding: 8mm 18mm 8mm; }
+.ps-logo img { height: 24mm; }
+.ps-title { margin-bottom: 2.5mm; font-size: 13.5pt; }
+table.ps { font-size: 12pt; }
+table.ps th, table.ps td { padding: 1.3mm 3mm; }
+table.ps td.lbl, table.ps td.amt { height: 8.5mm; }
+table.ps tr.cols th { padding: 2mm 3mm; }
+table.ps td.blank { height: 14mm; }

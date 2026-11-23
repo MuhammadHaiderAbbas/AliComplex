@@ -52,38 +52,32 @@ function verifyFooter(ref, code) {
 // Pay & Allowances | Others Allowances | Deductions, then Gross Pay and Net Amount.
 const OTHER_ALLOW = /medical|fuel|driver|dvr|conveyance|transport|arrear|overtime|big city|disl|other|incentive/i;
 function payslipHTML(s) {
-  const d = s.data, H = typeof HOSPITAL !== 'undefined' ? HOSPITAL : {};
+  const d = s.data;
   const pay = d.earnings.filter(x => !OTHER_ALLOW.test(x.name)), oth = d.earnings.filter(x => OTHER_ALLOW.test(x.name));
   const ded = d.deductions;
   const rows = Math.max(pay.length, oth.length, ded.length, 4);
-  const cell = (x, k) => x ? (k === 'n' ? esc(x.name) : money(x.amount)) : '';
+  const n = x => x ? esc(x.name) : '', a = x => x ? money(x.amount) : '';
   let body = '';
-  for (let i = 0; i < rows; i++) body += `<tr><td>${cell(pay[i], 'n')}</td><td class="num">${cell(pay[i])}</td><td>${cell(oth[i], 'n')}</td><td class="num">${cell(oth[i])}</td><td>${cell(ded[i], 'n')}</td><td class="num">${cell(ded[i])}</td></tr>`;
-  const sum = a => a.reduce((t, x) => t + Number(x.amount || 0), 0);
-  const stamp = s.status === 'void' ? ' <span class="void">VOID</span>' : s.status === 'draft' ? ' <span class="void">DRAFT</span>' : '';
-  return letterheadHTML(`
-    <div class="ss-title">Salary Slip for the Month of ${esc(d.period_label)}${d.title_note ? ' ' + esc(d.title_note) : ''}${stamp}</div>
-    <div class="ss-sub">${esc(H.legal_name || 'Ali Medical Complex')} · Financial Year ${esc(s.fy)}</div>
-    <table class="ss">
-      <colgroup><col style="width:20%"><col style="width:46%"><col style="width:17%"><col style="width:17%"></colgroup>
-      <tr><th rowspan="2">Name and Designation:</th><td rowspan="2" class="c"><b>${esc(d.name)}</b>${d.designation ? ', ' + esc(d.designation) : ''}</td><th>BPS:</th><td class="c">${esc(d.bps || '—')}</td></tr>
-      <tr><th>Stage:</th><td class="c">${esc(d.stage || '—')}</td></tr>
-      <tr><th>DOJ</th><td class="c">${d.join_date ? longDate(d.join_date) : '—'}</td><th>Days:</th><td class="c">${d.days_attended ?? d.working_days ?? '—'}</td></tr>
-      <tr><th>Department</th><td class="c">${esc(d.department || '—')}</td><th>Emp. Code:</th><td class="c">${esc(d.emp_code)}</td></tr>
-      <tr><th>A/C #</th><td colspan="3">${esc(d.bank_account || '—')}</td></tr>
+  for (let i = 0; i < rows; i++) body += `<tr><td class="lbl">${n(pay[i])}</td><td class="amt i">${a(pay[i])}</td><td class="lbl">${n(oth[i])}</td><td class="amt">${a(oth[i])}</td><td class="lbl">${n(ded[i])}</td><td class="amt">${a(ded[i])}</td></tr>`;
+  const stamp = s.status === 'void' ? '<span class="ps-stamp">VOID</span>' : s.status === 'draft' ? '<span class="ps-stamp">DRAFT</span>' : '';
+  return `<div class="ps-page" data-no-tr>
+    ${stamp}
+    <div class="ps-logo"><img src="brand/logo-stacked.svg" alt="Ali Medical Complex"></div>
+    <div class="ps-title">Salary Slip for the Month of ${esc(d.period_label)}${d.title_note ? ' ' + esc(d.title_note) : ''}</div>
+    <table class="ps">
+      <colgroup><col style="width:18%"><col style="width:10%"><col style="width:22%"><col style="width:12%"><col style="width:19%"><col style="width:19%"></colgroup>
+      <tr><th rowspan="2" class="hd">Name and<br>Designation:</th><td rowspan="2" colspan="3" class="val">${esc(d.name)}${d.designation ? ', ' + esc(d.designation) : ''}</td><th class="hd">BPS:</th><td class="val">${esc(d.bps || '0')}</td></tr>
+      <tr><th class="hd">Stage:</th><td class="val">${esc(d.stage || '0')}</td></tr>
+      <tr><th class="hd">DOJ</th><td colspan="3" class="val">${d.join_date ? new Date(d.join_date + 'T00:00:00').toLocaleDateString('en-US') : ''}</td><th class="hd">Days:</th><td class="val">${d.days_attended ?? d.working_days ?? ''}</td></tr>
+      <tr><th class="hd">Branch</th><td colspan="3" class="val">${esc(d.department || '')}</td><th class="hd">Emp. Code:</th><td class="val">${esc(d.emp_code)}</td></tr>
+      <tr><th class="hd">A/C #</th><td colspan="5" class="acc">${esc(d.bank_account || '')}</td></tr>
+      <tr class="cols"><th>Pay &amp; Allowances</th><th>Amount</th><th>Others Allowances</th><th>Amount</th><th>Deductions</th><th>Amount</th></tr>
+      ${body}
+      <tr class="tot"><th colspan="5">Gross Pay</th><td class="val">${money(d.gross)}</td></tr>
+      <tr class="tot"><th colspan="5">Net Amount</th><td class="val">${money(d.net)}</td></tr>
+      <tr><td colspan="6" class="blank">${s.verify_code ? `<span class="ps-verify">Verification code ${esc(s.verify_code)}</span>` : ''}</td></tr>
     </table>
-    <table class="ss ss-pay">
-      <colgroup><col style="width:19%"><col style="width:13%"><col style="width:21%"><col style="width:13%"><col style="width:21%"><col style="width:13%"></colgroup>
-      <thead><tr><th>Pay &amp; Allowances</th><th class="num">Amount</th><th>Others Allowances</th><th class="num">Amount</th><th>Deductions</th><th class="num">Amount</th></tr></thead>
-      <tbody>${body}</tbody>
-      <tr class="sub"><th>Total</th><td class="num">${money(sum(pay))}</td><th>Total</th><td class="num">${money(sum(oth))}</td><th>Total Deductions</th><td class="num">${money(d.total_deductions)}</td></tr>
-      <tr class="tot"><th colspan="5">Gross Pay</th><td class="num">${money(d.gross)}</td></tr>
-      <tr class="tot net"><th colspan="5">Net Amount</th><td class="num">${money(d.net)}</td></tr>
-      <tr><td colspan="6" class="words"><b>Amount in words:</b> ${amountInWords(d.net)}${d.remarks ? `<br><b>Remarks:</b> ${esc(d.remarks)}` : ''}</td></tr>
-    </table>
-    <div class="sign-row"><div><div class="sign-line"></div>Prepared by (Accounts)</div><div><div class="sign-line"></div>${esc(H.signatory_name || '')}<br>${esc(H.signatory_title || 'Authorised Signatory')}</div></div>
-    <p class="fine">System generated document${s.issued_at ? ', issued ' + longDate(s.issued_at) : ''}. All amounts are in Pakistani Rupees (PKR). Errors &amp; omissions excepted.</p>
-  `, { footer: verifyFooter(null, s.verify_code) });
+  </div>`;
 }
 
 // ---------- letters ----------
